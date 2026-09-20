@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html lang="fa" dir="rtl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>صفحه پیدا نشد | زهره زارع</title>
+<meta name="robots" content="noindex">
+<meta name="theme-color" content="#FDFBF8">
+<link rel="icon" type="image/svg+xml" href="/assets/img/favicon.svg">
+<!-- این صفحه عمداً مستقل و بدون فایل خارجی است تا در هر مسیر خرابی
+     (حتی وقتی CSS پیدا نشود) درست نمایش داده شود. -->
+<style>
+  :root {
+    --cream-50: #FFFCFA;
+    --cream-200: #F0E4D9;
+    --blush-200: #F3CFC3;
+    --rose-600: #85462F;
+    --gold-300: #D4B183;
+    --ink-900: #15100E;
+    --ink-500: #6B564C;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    min-height: 100vh;
+    display: grid;
+    place-items: center;
+    padding: 24px;
+    background: linear-gradient(160deg, var(--cream-50), var(--cream-200));
+    color: var(--ink-900);
+    font-family: "IRANYekanX", "Vazirmatn", "Segoe UI", Tahoma, system-ui, sans-serif;
+    text-align: center;
+  }
+  .card {
+    max-width: 460px;
+    width: 100%;
+    padding: 40px 28px;
+    background: rgba(255, 252, 250, 0.86);
+    border: 1px solid var(--blush-200);
+    border-radius: 24px;
+    box-shadow: 0 18px 50px rgba(21, 16, 14, 0.08);
+  }
+  .code {
+    font-size: 68px;
+    line-height: 1;
+    font-weight: 800;
+    color: var(--gold-300);
+    letter-spacing: 2px;
+    margin-bottom: 8px;
+  }
+  h1 { font-size: 22px; margin: 0 0 12px; }
+  p { color: var(--ink-500); line-height: 2; margin: 0 0 24px; font-size: 15px; }
+  .actions { display: flex; gap: 12px; justify-content: center; flex-wrap: wrap; }
+  .btn {
+    display: inline-block;
+    padding: 12px 22px;
+    border-radius: 999px;
+    text-decoration: none;
+    font-size: 15px;
+    transition: transform .2s ease, box-shadow .2s ease;
+  }
+  .btn:hover { transform: translateY(-2px); }
+  .btn--main { background: var(--rose-600); color: var(--cream-50); box-shadow: 0 8px 20px rgba(133, 70, 47, 0.25); }
+  .btn--soft { background: transparent; color: var(--rose-600); border: 1px solid var(--blush-200); }
+</style>
+</head>
+<body>
+  <main class="card">
+    <div class="code">۴۰۴</div>
+    <h1>این صفحه پیدا نشد</h1>
+    <p>
+      ممکن است آدرس را اشتباه وارد کرده باشید یا این صفحه جابه‌جا شده باشد.
+      از این‌جا می‌توانید به صفحه‌ی اصلی برگردید یا وقت رزرو کنید.
+    </p>
+    <div class="actions">
+      <a class="btn btn--main" href="/index.html">صفحه‌ی اصلی</a>
+      <a class="btn btn--soft" href="/booking.html">رزرو وقت</a>
+    </div>
+  </main>
+</body>
+</html>

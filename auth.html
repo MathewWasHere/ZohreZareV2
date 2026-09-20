@@ -1,0 +1,173 @@
+<!DOCTYPE html>
+<html lang="fa" dir="rtl">
+<head>
+
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="زهره زارع">
+<meta name="robots" content="noindex, follow">
+<title>ورود و ثبت‌نام | زهره زارع</title>
+<meta name="description" content="ورود و ثبت‌نام با شماره موبایل و کد تایید — بدون نیاز به رمز عبور.">
+<meta name="theme-color" content="#FDFBF8">
+<link rel="manifest" href="manifest.json">
+<link rel="icon" type="image/svg+xml" href="assets/img/favicon.svg">
+<link rel="apple-touch-icon" sizes="180x180" href="assets/img/brand/apple-touch-icon.png">
+<link rel="stylesheet" href="assets/css/fonts.css?v=19">
+<link rel="stylesheet" href="assets/css/base.css?v=20">
+<link rel="stylesheet" href="assets/css/components.css?v=21">
+<link rel="stylesheet" href="assets/css/pages.css?v=29">
+</head>
+<body>
+
+<a class="skip-link" href="#main">رفتن به محتوای اصلی</a>
+<div id="shellHeader"></div>
+
+<main id="main">
+  <div class="auth-wrap">
+    <div class="container">
+      <div class="narrow">
+
+        <div class="auth-card">
+
+          <!-- ============ گام ۱: شماره موبایل ============ -->
+          <section class="auth-step is-active" id="stepPhone">
+            <div class="auth-card__icon" id="phoneIcon"></div>
+            <h1>ورود یا ثبت‌نام</h1>
+            <p class="auth-card__sub">
+              شماره‌ی موبایلتان را وارد کنید. یک کد تایید برایتان می‌فرستیم و
+              با تایید آن، حسابتان ساخته یا وارد می‌شوید — بدون نیاز به رمز عبور.
+            </p>
+
+            <form id="phoneForm" novalidate>
+              <div class="field" id="phoneField">
+                <label class="field__label" for="phoneInput">شماره موبایل</label>
+                <div class="phone-input">
+                  <span class="phone-input__prefix">+98</span>
+                  <input
+                    id="phoneInput"
+                    type="tel"
+                    inputmode="numeric"
+                    autocomplete="tel"
+                    placeholder="912 345 6789"
+                    maxlength="14"
+                    aria-describedby="phoneError phoneHint">
+                </div>
+                <div class="field__hint" id="phoneHint">مثال: ۰۹۱۲۳۴۵۶۷۸۹</div>
+                <div class="field__error" id="phoneError" role="alert"></div>
+              </div>
+
+              <button class="btn btn--primary btn--block btn--lg" type="submit" id="sendBtn">
+                دریافت کد تایید
+              </button>
+            </form>
+
+            <div class="note" style="margin-top:var(--sp-5);">
+              <span>
+                کد تایید به شماره‌ی شما پیامک می‌شود. اگر تا یک دقیقه نرسید،
+                دکمه‌ی ارسال دوباره را بزنید.
+              </span>
+            </div>
+          </section>
+
+          <!-- ============ گام ۲: کد تایید ============ -->
+          <section class="auth-step" id="stepCode">
+            <button class="btn btn--quiet btn--sm" id="backBtn" type="button" style="margin-bottom:var(--sp-4);">
+              تغییر شماره
+            </button>
+
+            <h1>کد تایید را وارد کنید</h1>
+            <p class="auth-card__sub">
+              کد ۴ رقمی به شماره‌ی <strong class="ltr" id="phoneEcho"></strong> ارسال شد.
+            </p>
+
+            <div class="demo-code" id="demoCode" hidden></div>
+
+            <form id="codeForm" novalidate>
+              <div class="field" id="codeField">
+                <div class="otp" id="otpBox" dir="ltr">
+                  <input type="text" inputmode="numeric" maxlength="1" aria-label="رقم اول"  autocomplete="one-time-code">
+                  <input type="text" inputmode="numeric" maxlength="1" aria-label="رقم دوم">
+                  <input type="text" inputmode="numeric" maxlength="1" aria-label="رقم سوم">
+                  <input type="text" inputmode="numeric" maxlength="1" aria-label="رقم چهارم">
+                </div>
+                <div class="field__error" id="codeError" role="alert" style="text-align:center;"></div>
+              </div>
+
+              <button class="btn btn--primary btn--block btn--lg" type="submit" id="verifyBtn">
+                تایید و ورود
+              </button>
+            </form>
+
+            <div class="resend-row">
+              <span id="timerText"></span>
+              <button type="button" id="resendBtn" disabled>ارسال دوباره‌ی کد</button>
+            </div>
+          </section>
+
+          <!-- ============ گام ۳: خوش‌آمد ============ -->
+          <section class="auth-step" id="stepDone">
+            <div class="success-card" style="padding:var(--sp-5) 0;">
+              <div class="success-card__icon" id="doneIcon"></div>
+              <h1 id="doneTitle">خوش آمدید</h1>
+              <p class="auth-card__sub" id="doneText" style="margin-bottom:var(--sp-5);"></p>
+
+              <form id="nameForm" style="text-align:start;" novalidate>
+                <div class="field">
+                  <label class="field__label" for="nameInput">نامتان را بنویسید <span class="muted">(اختیاری)</span></label>
+                  <input class="input" id="nameInput" type="text" placeholder="مثلاً: مریم" maxlength="40" autocomplete="given-name">
+                  <div class="field__hint">برای اینکه در نوبت‌ها با اسم صداتان کنیم.</div>
+                </div>
+
+                <!-- تاریخ تولد: سه باکس مجزا (شمسی) -->
+                <div class="field" id="birthField">
+                  <label class="field__label" for="birthDay">تاریخ تولد <span class="muted">(اختیاری)</span></label>
+                  <div class="birth-row">
+                    <select class="input" id="birthDay"   aria-label="روز تولد"></select>
+                    <select class="input" id="birthMonth" aria-label="ماه تولد"></select>
+                    <select class="input" id="birthYear"  aria-label="سال تولد"></select>
+                  </div>
+                  <div class="birth-gift">
+                    <span class="birth-gift__emoji" aria-hidden="true">🎂</span>
+                    <span>لطفاً تاریخ تولد خود را به‌صورت دقیق وارد کنید تا در روز تولدتان شامل تخفیف ویژه شوید.</span>
+                  </div>
+                  <div class="field__error" id="birthError" role="alert"></div>
+                </div>
+
+                <button class="btn btn--primary btn--block btn--lg" type="submit" id="continueBtn">ادامه</button>
+              </form>
+            </div>
+          </section>
+
+        </div>
+
+        <p class="text-center muted" style="margin-top:var(--sp-4);font-size:var(--fs-xs);">
+          با ادامه‌ی فرایند، <a href="#">قوانین و شرایط</a> آکادمی را می‌پذیرید.
+        </p>
+
+      </div>
+    </div>
+  </div>
+</main>
+
+<script src="assets/js/core/install-prompt.js"></script>
+    <script src="assets/js/core/pwa.js"></script>
+<div id="shellFooter"></div>
+
+<script src="assets/js/core/config.js"></script>
+<script src="assets/js/core/store.js"></script>
+<script src="assets/js/core/utils.js"></script>
+<script src="assets/js/core/api.js"></script>
+<script src="assets/js/data/services.js"></script>
+<script src="assets/js/data/auth.js"></script>
+<script src="assets/js/data/appointments.js"></script>
+<script src="assets/js/data/backend-bridge.js"></script>
+<script src="assets/js/ui/icons.js"></script>
+<script src="assets/js/ui/toast.js"></script>
+<script src="assets/js/ui/shell.js"></script>
+<script src="assets/js/pages/auth.js"></script>
+
+</body>
+</html>

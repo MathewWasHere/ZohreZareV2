@@ -1,0 +1,69 @@
+# ==========================================================================
+# api/.htaccess — تنظیمات پوشه‌ی سرویس
+# ==========================================================================
+
+# --- ۰) فایل پیش‌فرض این پوشه ---
+# .htaccess ریشه DirectoryIndex را روی index.html گذاشته و زیرپوشه‌ها
+# آن را به ارث می‌برند. بدون خط زیر، باز کردن /api/ به‌جای مسیریاب،
+# خطای دسترسی می‌داد.
+DirectoryIndex index.php
+
+# --- ۱) هدایت همه‌ی درخواست‌ها به مسیریاب ---
+<IfModule mod_rewrite.c>
+  RewriteEngine On
+  RewriteBase /api/
+
+  # فایل‌های تشخیصی مستقیم اجرا می‌شوند
+  RewriteRule ^(selftest|sms-test|install)\.php$ - [L]
+
+  # هر چیز دیگری که فایل یا پوشه‌ی واقعی نیست → index.php
+  RewriteCond %{REQUEST_FILENAME} !-f
+  RewriteCond %{REQUEST_FILENAME} !-d
+  RewriteRule ^ index.php [QSA,L]
+</IfModule>
+
+# --- ۲) فایل تنظیمات هرگز از طریق وب خوانده نشود ---
+# اگر روزی PHP روی هاست از کار بیفتد، بدون این قانون محتوای
+# config.php (رمز دیتابیس و کلید پیامک) به‌صورت متن ساده نمایش
+# داده می‌شود.
+<FilesMatch "^(config|config\.sample)\.php$">
+  <IfModule mod_authz_core.c>
+    Require all denied
+  </IfModule>
+  <IfModule !mod_authz_core.c>
+    Order allow,deny
+    Deny from all
+  </IfModule>
+</FilesMatch>
+
+# --- ۳) پوشه‌ی lib فقط از داخل PHP قابل استفاده است ---
+RedirectMatch 404 ^/api/lib/
+
+# --- ۴) فایل SQL نباید دانلود شود ---
+<FilesMatch "\.(sql|log|md)$">
+  <IfModule mod_authz_core.c>
+    Require all denied
+  </IfModule>
+  <IfModule !mod_authz_core.c>
+    Order allow,deny
+    Deny from all
+  </IfModule>
+</FilesMatch>
+
+# --- ۵) نمایش خطاهای PHP روی سایت واقعی خاموش باشد ---
+# بعضی هاست‌ها اجازه‌ی php_flag در htaccess نمی‌دهند؛ داخل IfModule
+# گذاشته شده تا اگر نپذیرفتند، سایت با خطای ۵۰۰ بالا نیاید.
+<IfModule mod_php.c>
+  php_flag display_errors off
+</IfModule>
+<IfModule mod_php7.c>
+  php_flag display_errors off
+</IfModule>
+<IfModule mod_php8.c>
+  php_flag display_errors off
+</IfModule>
+
+# --- ۶) پاسخ‌های API نباید کش شوند ---
+<IfModule mod_headers.c>
+  Header always set X-Content-Type-Options "nosniff"
+</IfModule>

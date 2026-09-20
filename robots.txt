@@ -1,0 +1,9 @@
+User-agent: *
+Allow: /
+
+# صفحات داخلی که نباید در نتایج جست‌وجو بیایند
+Disallow: /panel/
+Disallow: /auth.html
+Disallow: /account.html
+
+Sitemap: https://zohrezare.ir/sitemap.xml

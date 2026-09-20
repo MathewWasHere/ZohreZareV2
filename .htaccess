@@ -1,0 +1,121 @@
+# ==========================================================================
+# zohrezare.ir — تنظیمات Apache برای هاست cPanel
+# این فایل باید کنار index.html در پوشه‌ی public_html باشد.
+# ==========================================================================
+
+DirectoryIndex index.html
+Options -Indexes
+AddDefaultCharset UTF-8
+
+# --------------------------------------------------------------------------
+# ۱) انتقال به HTTPS و حذف www
+#
+#  SSL دامنه فعال است (AutoSSL)؛ لذا این بخش روشن شده است.
+#  اول در cPanel بخش «SSL/TLS Status» گواهی AutoSSL را برای دامنه فعال کنید
+#  و مطمئن شوید https://zohrezare.ir بالا می‌آید؛ بعد ۶ خط زیر را از حالت
+#  کامنت خارج کنید (علامت # ابتدای خط‌ها را بردارید).
+#  اگر قبل از فعال بودن SSL این را روشن کنید، سایت از دسترس خارج می‌شود.
+# --------------------------------------------------------------------------
+<IfModule mod_rewrite.c>
+  RewriteEngine On
+
+RewriteCond %{HTTPS} !=on
+RewriteCond %{HTTP:X-Forwarded-Proto} !https
+RewriteRule ^ https://%{HTTP_HOST}%{REQUEST_URI} [L,R=301]
+
+RewriteCond %{HTTP_HOST} ^www\.(.+)$ [NC]
+RewriteRule ^ https://%1%{REQUEST_URI} [L,R=301]
+</IfModule>
+
+# --------------------------------------------------------------------------
+# ۲) نوع فایل‌ها (MIME) — بدون این‌ها فونت‌ها و مانیفست روی بعضی هاست‌ها
+#    اشتباه سرو می‌شوند.
+# --------------------------------------------------------------------------
+<IfModule mod_mime.c>
+  AddType text/html                   .html
+  AddType text/css                    .css
+  AddType application/javascript      .js
+  AddType application/json            .json
+  AddType application/manifest+json   .webmanifest
+  AddType image/svg+xml               .svg
+  AddType image/webp                  .webp
+  AddType image/png                   .png
+  AddType image/jpeg                  .jpg .jpeg
+  AddType font/woff2                  .woff2
+
+  AddCharset UTF-8 .html .css .js .json .svg .txt
+</IfModule>
+
+# --------------------------------------------------------------------------
+# ۳) فشرده‌سازی (gzip) — حجم HTML/CSS/JS تا حدود یک‌سوم کم می‌شود.
+#    تصاویر و woff2 از قبل فشرده‌اند و دوباره فشرده نمی‌شوند.
+# --------------------------------------------------------------------------
+<IfModule mod_deflate.c>
+  AddOutputFilterByType DEFLATE text/html text/plain text/xml text/css
+  AddOutputFilterByType DEFLATE application/javascript application/x-javascript
+  AddOutputFilterByType DEFLATE application/json application/manifest+json
+  AddOutputFilterByType DEFLATE image/svg+xml
+</IfModule>
+
+# --------------------------------------------------------------------------
+# ۴) کش مرورگر
+#    تصاویر/فونت‌ها: یک سال (نامشان ثابت است)
+#    CSS: یک سال — چون در HTML با ?v=15 نسخه‌گذاری شده و با تغییر نسخه،
+#         مرورگر خودکار فایل تازه می‌گیرد.
+#    JS و HTML: نسخه‌گذاری ندارند، پس هر بار اعتبارسنجی می‌شوند (پاسخ ۳۰۴
+#         سبک است) تا بعد از هر آپدیت، کاربر فوراً نسخه‌ی جدید را ببیند.
+# --------------------------------------------------------------------------
+<IfModule mod_expires.c>
+  ExpiresActive On
+  ExpiresDefault                          "access plus 1 month"
+  ExpiresByType image/jpeg                "access plus 1 year"
+  ExpiresByType image/png                 "access plus 1 year"
+  ExpiresByType image/webp                "access plus 1 year"
+  ExpiresByType image/svg+xml             "access plus 1 year"
+  ExpiresByType font/woff2                "access plus 1 year"
+  ExpiresByType text/css                  "access plus 1 year"
+  ExpiresByType text/html                 "access plus 0 seconds"
+  ExpiresByType application/javascript    "access plus 0 seconds"
+  ExpiresByType application/manifest+json "access plus 0 seconds"
+</IfModule>
+
+<IfModule mod_headers.c>
+  <FilesMatch "\.(jpg|jpeg|png|webp|svg|woff2)$">
+    Header set Cache-Control "public, max-age=31536000, immutable"
+  </FilesMatch>
+
+  <FilesMatch "\.css$">
+    Header set Cache-Control "public, max-age=31536000"
+  </FilesMatch>
+
+  <FilesMatch "\.(html|js)$">
+    Header set Cache-Control "no-cache, must-revalidate"
+  </FilesMatch>
+
+  # سرویس‌ورکر و مانیفست هرگز نباید کش شوند، وگرنه آپدیت سایت
+  # به کاربرهای قدیمی نمی‌رسد.
+  <FilesMatch "^(service-worker\.js|manifest\.json)$">
+    Header set Cache-Control "no-store, no-cache, must-revalidate, max-age=0"
+  </FilesMatch>
+
+  # --------- هدرهای امنیتی ---------
+  Header always set X-Content-Type-Options "nosniff"
+  Header always set X-Frame-Options "SAMEORIGIN"
+  Header always set Referrer-Policy "strict-origin-when-cross-origin"
+  Header always set Permissions-Policy "geolocation=(), microphone=(), camera=()"
+</IfModule>
+
+# --------------------------------------------------------------------------
+# ۵) صفحه‌ی خطا
+#    توجه: مسیر زیر از ریشه‌ی دامنه حساب می‌شود و فرض بر این است که سایت
+#    مستقیم در public_html نصب شده. اگر در زیرپوشه نصب کردید، مسیر را
+#    مثلاً به /folder/404.html تغییر دهید.
+# --------------------------------------------------------------------------
+ErrorDocument 404 /404.html
+
+# --------------------------------------------------------------------------
+# ۶) جلوگیری از دسترسی به فایل‌های داخلی
+# --------------------------------------------------------------------------
+<FilesMatch "^(_.*|\.htaccess|\.gitignore|.*\.md|.*\.py)$">
+  Require all denied
+</FilesMatch>

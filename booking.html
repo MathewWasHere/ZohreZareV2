@@ -1,0 +1,170 @@
+<!DOCTYPE html>
+<html lang="fa" dir="rtl">
+<head>
+
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="زهره زارع">
+<title>رزرو نوبت | زهره زارع</title>
+<meta name="description" content="رزرو آنلاین نوبت — انتخاب خدمت، روز و ساعت در کمتر از یک دقیقه.">
+
+<!-- meta: اشتراک‌گذاری و سئو -->
+<link rel="canonical" href="https://zohrezare.ir/booking.html">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="زهره زارع">
+<meta property="og:locale" content="fa_IR">
+<meta property="og:title" content="رزرو نوبت | زهره زارع">
+<meta property="og:description" content="رزرو آنلاین نوبت — انتخاب خدمت، روز و ساعت در کمتر از یک دقیقه.">
+<meta property="og:url" content="https://zohrezare.ir/booking.html">
+<meta property="og:image" content="https://zohrezare.ir/assets/img/og-cover.jpg">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta property="og:image:alt" content="اجرای خدمات تخصصی ابرو در آکادمی زهره زارع">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="رزرو نوبت | زهره زارع">
+<meta name="twitter:description" content="رزرو آنلاین نوبت — انتخاب خدمت، روز و ساعت در کمتر از یک دقیقه.">
+<meta name="twitter:image" content="https://zohrezare.ir/assets/img/og-cover.jpg">
+<link rel="preload" href="assets/fonts/IRANYekanX-Regular.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="preload" href="assets/fonts/IRANYekanX-Medium.woff2" as="font" type="font/woff2" crossorigin>
+<meta name="theme-color" content="#FDFBF8">
+<link rel="manifest" href="manifest.json">
+<link rel="icon" type="image/svg+xml" href="assets/img/favicon.svg">
+<link rel="apple-touch-icon" sizes="180x180" href="assets/img/brand/apple-touch-icon.png">
+<link rel="stylesheet" href="assets/css/fonts.css?v=19">
+<link rel="stylesheet" href="assets/css/base.css?v=20">
+<link rel="stylesheet" href="assets/css/components.css?v=21">
+<link rel="stylesheet" href="assets/css/pages.css?v=29">
+</head>
+<body>
+
+<a class="skip-link" href="#main">رفتن به محتوای اصلی</a>
+<div id="shellHeader"></div>
+
+<main id="main">
+
+  <div class="page-head">
+    <div class="container">
+      <nav class="crumbs" aria-label="مسیر">
+        <a href="index.html">خانه</a><span>/</span><span>رزرو نوبت</span>
+      </nav>
+      <h1>رزرو نوبت</h1>
+      <p>خدمت، روز و ساعت دلخواهتان را انتخاب کنید. برای ثبت نهایی فقط شماره‌ی موبایل لازم است.</p>
+    </div>
+  </div>
+
+  <section class="section">
+    <div class="container">
+      <div class="narrow narrow--wide">
+
+        <!-- نوار مراحل -->
+        <div class="steps" id="stepsBar" role="list"></div>
+
+        <!-- ============ گام ۱: خدمت ============ -->
+        <div class="book-panel is-active" id="panelService">
+          <h2 style="font-size:var(--fs-xl);margin-bottom:var(--sp-2);">کدام خدمت را می‌خواهید؟</h2>
+          <p class="muted" style="font-size:var(--fs-sm);margin-bottom:var(--sp-5);">
+            روی خدمت بزنید؛ گزینه‌های دقیق با قیمتشان همان‌جا داخل همان کارت باز می‌شوند.
+          </p>
+
+          <div class="stack" id="serviceChoices"></div>
+
+          <div class="book-actions">
+            <a class="btn btn--ghost" href="services.html">مقایسه‌ی خدمات</a>
+          </div>
+        </div>
+
+        <!-- ============ گام ۲: زمان ============ -->
+        <div class="book-panel" id="panelTime">
+          <h2 style="font-size:var(--fs-xl);margin-bottom:var(--sp-2);">چه روزی و چه ساعتی؟</h2>
+          <p class="muted" style="font-size:var(--fs-sm);margin-bottom:var(--sp-5);">
+            روز را از تقویم انتخاب کنید؛ روزهای تعطیل و تکمیل مشخص شده‌اند و اولین روزِ باز به‌طور پیش‌فرض انتخاب می‌شود.
+          </p>
+
+          <h3 style="font-size:var(--fs-md);margin-bottom:var(--sp-3);">انتخاب روز</h3>
+          <div id="calWrap"></div>
+
+          <h3 style="font-size:var(--fs-md);margin:var(--sp-5) 0 var(--sp-3);">انتخاب ساعت</h3>
+          <div class="slot-grid" id="slotGrid"></div>
+          <div id="slotEmpty"></div>
+
+          <div class="field" style="margin-top:var(--sp-5);">
+            <label class="field__label" for="noteInput">توضیح برای ما <span class="muted">(اختیاری)</span></label>
+            <textarea class="input" id="noteInput" maxlength="400"
+              placeholder="مثلاً: قبلاً کاشت داشته‌ام و می‌خواهم ترمیم شود، یا حساسیت پوستی دارم."></textarea>
+          </div>
+
+          <div class="book-actions">
+            <button class="btn btn--ghost" id="backToServiceBtn" type="button">مرحله قبل</button>
+          </div>
+        </div>
+
+        <!-- ============ گام ۳: تایید ============ -->
+        <div class="book-panel" id="panelConfirm">
+          <h2 style="font-size:var(--fs-xl);margin-bottom:var(--sp-2);">بررسی و ثبت نهایی</h2>
+          <p class="muted" style="font-size:var(--fs-sm);margin-bottom:var(--sp-5);">
+            اطلاعات زیر را یک بار مرور کنید.
+          </p>
+
+          <div class="summary" id="summaryBox"></div>
+
+          <div id="authNotice" style="margin-top:var(--sp-4);"></div>
+
+          <div class="book-actions">
+            <button class="btn btn--ghost" id="backToTimeBtn" type="button">مرحله قبل</button>
+          </div>
+        </div>
+
+        <!-- ============ گام ۴: موفقیت ============ -->
+        <div class="book-panel" id="panelDone">
+          <div class="card success-card">
+            <div class="success-card__icon" id="doneIcon"></div>
+            <h2 style="margin-bottom:var(--sp-3);" id="doneTitle">درخواستتان ثبت شد</h2>
+            <p class="muted" style="max-width:420px;margin-inline:auto;margin-bottom:var(--sp-5);" id="doneText"></p>
+
+            <div class="summary" style="text-align:start;margin-bottom:var(--sp-4);" id="doneSummary"></div>
+
+            <div class="done-meta" id="doneDetails"></div>
+
+            <div class="cta-actions">
+              <button class="btn btn--primary" id="icsBtn" type="button" hidden></button>
+              <a class="btn btn--ghost" href="account.html">دیدن نوبت‌های من</a>
+              <a class="btn btn--ghost" href="index.html">بازگشت به خانه</a>
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </section>
+
+</main>
+
+<!-- نوار چسبان پایین: دکمه‌ی اصلی هر گام همیشه زیر انگشت کاربر است -->
+<div class="book-cta" id="bookCta" hidden>
+  <div class="book-cta__info" id="ctaInfo" aria-live="polite"></div>
+  <button class="btn btn--primary" id="ctaBtn" type="button" disabled>ادامه</button>
+</div>
+
+<script src="assets/js/core/install-prompt.js"></script>
+    <script src="assets/js/core/pwa.js"></script>
+<div id="shellFooter"></div>
+
+<script src="assets/js/core/config.js"></script>
+<script src="assets/js/core/store.js"></script>
+<script src="assets/js/core/utils.js"></script>
+<script src="assets/js/core/api.js"></script>
+<script src="assets/js/data/services.js"></script>
+<script src="assets/js/data/auth.js"></script>
+<script src="assets/js/data/appointments.js"></script>
+<script src="assets/js/data/backend-bridge.js"></script>
+<script src="assets/js/ui/icons.js"></script>
+<script src="assets/js/ui/toast.js"></script>
+<script src="assets/js/ui/dialog.js"></script>
+<script src="assets/js/ui/shell.js"></script>
+<script src="assets/js/pages/booking.js"></script>
+
+</body>
+</html>

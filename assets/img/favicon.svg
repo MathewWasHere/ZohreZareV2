@@ -1,0 +1,37 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" width="64" height="64">
+  <title>زهره زارع</title>
+  <defs>
+    <!-- گرادیان رزگلد -->
+    <linearGradient id="rg" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%"   stop-color="#E8B79E"/>
+      <stop offset="45%"  stop-color="#C4826D"/>
+      <stop offset="100%" stop-color="#8E4A32"/>
+    </linearGradient>
+    <linearGradient id="rgLight" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%"   stop-color="#F6D9C6"/>
+      <stop offset="100%" stop-color="#D09479"/>
+    </linearGradient>
+  </defs>
+
+  <!-- پس‌زمینه‌ی کرم روشن با گوشه‌ی گرد -->
+  <rect width="64" height="64" rx="15" fill="#FFFCFA"/>
+  <rect x="1" y="1" width="62" height="62" rx="14" fill="none"
+        stroke="url(#rg)" stroke-width="1.6" opacity="0.35"/>
+
+  <!-- چشم استیلیزه: پلک بالا -->
+  <path d="M12 34c5.5-8.5 12-12.8 20-12.8S46.5 25.5 52 34"
+        fill="none" stroke="url(#rg)" stroke-width="3.6" stroke-linecap="round"/>
+
+  <!-- پلک پایین -->
+  <path d="M12 34c5.5 6.4 12 9.6 20 9.6S46.5 40.4 52 34"
+        fill="none" stroke="url(#rgLight)" stroke-width="2.4" stroke-linecap="round"/>
+
+  <!-- عنبیه -->
+  <circle cx="32" cy="33.4" r="6.4" fill="url(#rg)"/>
+  <circle cx="32" cy="33.4" r="2.6" fill="#2A1F1A"/>
+  <circle cx="29.9" cy="31.3" r="1.5" fill="#FFF6EE" opacity="0.9"/>
+
+  <!-- سه مژه‌ی ظریف -->
+  <path d="M20.5 24.6l-2.6-4.2M32 20.4v-4.8M43.5 24.6l2.6-4.2"
+        fill="none" stroke="url(#rg)" stroke-width="2.6" stroke-linecap="round"/>
+</svg>
