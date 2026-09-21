@@ -102,3 +102,320 @@ body.on-admin .cust-chip--bday {
 body.on-admin .admin-content:not(:has(#panel-appointments:not([hidden]))) .admin-dash {
   display: none;
 }
+
+/* --------------------------------------------------------------------------
+   ۴) نوارهای چسبان هیچ‌وقت نمی‌چسبیدند
+
+   در base.css روی html و body مقدار overflow-x:hidden گذاشته شده. همان یک
+   خط، body را به «ظرف اسکرول» تبدیل می‌کند؛ و طبق مشخصات CSS، هر
+   position:sticky داخل یک ظرف اسکرول نسبت به همان ظرف محاسبه می‌شود، نه
+   نسبت به پنجره. نتیجه این بود که نوار فیلتر نوبت‌ها و نوار ذخیره‌ی ویرایش
+   خدمت هر دو position:sticky داشتند ولی در عمل با صفحه بالا می‌رفتند —
+   یعنی ادمین برای رسیدن دوباره به آن‌ها مجبور بود تا بالای صفحه اسکرول کند.
+
+   overflow-x:clip دقیقاً همان برش افقی را می‌دهد، اما ظرف اسکرول نمی‌سازد
+   (overflow-y روی visible می‌ماند). پس همان محافظت باقی می‌ماند و چسبندگی
+   برمی‌گردد.
+
+   در مرورگرهایی که clip را نمی‌شناسند این بلوک اجرا نمی‌شود و رفتار امروز
+   دست‌نخورده می‌ماند.
+   -------------------------------------------------------------------------- */
+@supports (overflow-x: clip) {
+  body.on-admin {
+    overflow-x: clip;
+  }
+}
+
+/* --------------------------------------------------------------------------
+   ۵) ارتفاع نوارها: اسکرول کمتر، بدون حذف هیچ اطلاعاتی
+
+   اندازه‌گیری‌شده روی پنل فعلی (نوبت‌ها، ۱۲۸۰×۷۲۰):
+     سربرگ ۱۲۹ + فاصله ۳۲ + کارت‌های خلاصه ۱۱۸+۲۴
+     + فیلتر ۵۸+۱۲ + جست‌وجو ۵۵+۱۶
+     → اولین کارت نوبت روی ۴۴۵ پیکسل، یعنی ۶۲٪ ارتفاع صفحه.
+
+   هیچ‌چیز حذف نشده؛ فقط چیدمان فشرده‌تر شده و همان اطلاعات سر جای خودش است.
+   -------------------------------------------------------------------------- */
+
+/* --- ۵.۱ سربرگ تیره: دو ردیف → یک ردیف --- */
+body.on-admin .admin-head {
+  padding-top: var(--sp-4);
+  padding-bottom: var(--sp-4);
+}
+
+body.on-admin .admin-head h1 {
+  font-size: var(--fs-lg);
+  line-height: 1.35;
+  margin-bottom: 0;
+}
+
+body.on-admin .admin-head p {
+  font-size: var(--fs-xs);
+  line-height: 1.6;
+}
+
+@media (min-width: 720px) {
+  body.on-admin .admin-head__in {
+    align-items: center;
+    gap: var(--sp-4);
+  }
+
+  /* عنوان و سلام، کنار هم در یک خط */
+  body.on-admin .admin-head__in > div:first-child {
+    display: flex;
+    align-items: baseline;
+    flex-wrap: wrap;
+    gap: 2px var(--sp-3);
+  }
+}
+
+@media (max-width: 719px) {
+  body.on-admin .admin-head h1 {
+    font-size: var(--fs-md);
+  }
+
+  /* نشان «دسترسی مدیر» روی موبایل تزئینی است و یک ردیف کامل می‌گیرد */
+  body.on-admin .admin-head .badge--gold {
+    display: none;
+  }
+
+  /* متن و دکمه‌ها کنار هم بمانند تا سربرگ سه‌ردیفه نشود */
+  body.on-admin .admin-head__in {
+    flex-wrap: nowrap;
+    align-items: flex-start;
+    gap: var(--sp-3);
+  }
+
+  body.on-admin .admin-head__in > div:first-child {
+    min-width: 0;
+  }
+}
+
+/* --- ۵.۲ کارت‌های خلاصه: ۱۱۸ → ~۶۰ پیکسل --- */
+@media (min-width: 760px) {
+  .admin-dash {
+    gap: var(--sp-2);
+    margin-bottom: var(--sp-4);
+  }
+
+  /* آیکون کنار، عدد و برچسب روی هم — بدون حذف هیچ کارتی */
+  .dash-card {
+    display: grid;
+    grid-template-columns: auto minmax(0, 1fr);
+    grid-template-areas: "ico num" "ico lbl";
+    align-items: center;
+    column-gap: var(--sp-3);
+    padding: var(--sp-2) var(--sp-3);
+  }
+
+  .dash-card__ico {
+    grid-area: ico;
+    width: 30px;
+    height: 30px;
+    margin-bottom: 0;
+  }
+
+  .dash-card__ico svg {
+    width: 17px;
+    height: 17px;
+  }
+
+  .dash-card__num {
+    grid-area: num;
+    font-size: var(--fs-xl);
+    line-height: 1.2;
+  }
+
+  .dash-card__lbl {
+    grid-area: lbl;
+    font-size: .6875rem;
+    line-height: 1.45;
+  }
+}
+
+/* موبایل: یک ردیف افقی به‌جای شبکه‌ی ۲×۳ که ۳۷۴ پیکسل می‌گرفت */
+@media (max-width: 759px) {
+  .admin-dash {
+    grid-template-columns: none;
+    grid-auto-flow: column;
+    grid-auto-columns: minmax(150px, 45%);
+    gap: var(--sp-2);
+    margin-bottom: var(--sp-3);
+    overflow-x: auto;
+    overscroll-behavior-x: contain;
+    scroll-snap-type: x proximity;
+    scrollbar-width: none;
+  }
+
+  .admin-dash::-webkit-scrollbar {
+    display: none;
+  }
+
+  .dash-card {
+    scroll-snap-align: start;
+    display: grid;
+    grid-template-columns: auto minmax(0, 1fr);
+    grid-template-areas: "ico num" "ico lbl";
+    align-items: center;
+    column-gap: var(--sp-2);
+    padding: var(--sp-2) var(--sp-3);
+  }
+
+  .dash-card__ico {
+    grid-area: ico;
+    width: 28px;
+    height: 28px;
+    margin-bottom: 0;
+  }
+
+  .dash-card__ico svg {
+    width: 16px;
+    height: 16px;
+  }
+
+  .dash-card__num {
+    grid-area: num;
+    font-size: var(--fs-lg);
+    line-height: 1.2;
+  }
+
+  .dash-card__lbl {
+    grid-area: lbl;
+    font-size: .6875rem;
+    line-height: 1.4;
+  }
+
+  /* در چیدمان ستونی، span دو ستون معنا ندارد */
+  .dash-card--wide {
+    grid-column: auto;
+  }
+}
+
+/* --- ۵.۳ نوار ابزار: فیلتر و جست‌وجو در یک ردیف چسبان --- */
+
+/* سربرگ سایت در پنل پنهان است، پس چسبیدن باید از بالای همان پنجره حساب شود
+   (قبلاً روی موبایل ۸۰ پیکسل پایین‌تر می‌چسبید و جای خالی می‌ساخت). */
+body.on-admin .admin-filters {
+  top: 10px;
+}
+
+/* چیپ‌ها هرگز به ردیف دوم نمی‌روند؛ در فضای کم، افقی اسکرول می‌شوند.
+   اگر بپیچند، نوار ابزار دوردیفه می‌شود و کادر جست‌وجو از کنارش به خط
+   بعد می‌افتد. با اسکرول افقی، ارتفاع نوار همیشه ثابت می‌ماند. */
+body.on-admin .admin-filters {
+  flex-wrap: nowrap;
+  overflow-x: auto;
+  overscroll-behavior-x: contain;
+  scrollbar-width: none;
+}
+
+body.on-admin .admin-filters::-webkit-scrollbar {
+  display: none;
+}
+
+body.on-admin .admin-filters .fchip {
+  flex: 0 0 auto;
+}
+
+@media (min-width: 720px) {
+  /* :not([hidden]) لازم است؛ وگرنه display:flex تب‌های بسته را هم نشان می‌دهد */
+  #panel-appointments:not([hidden]) {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: stretch;
+  }
+
+  /* نوار فیلتر، لبه‌ی چپِ گرد و خط مرزی‌اش را به کادر جست‌وجو می‌دهد.
+     flex-basis صفر است تا عرض max-content نخواهد و جست‌وجو را به خط بعد
+     نیندازد؛ چیپ‌ها داخل خودش جا می‌شوند. */
+  #panel-appointments .admin-filters {
+    flex: 1 1 0;
+    min-width: 0;
+    margin: 0;
+    border-start-end-radius: 0;
+    border-end-end-radius: 0;
+  }
+
+  #panel-appointments .admin-search {
+    flex: 0 1 clamp(200px, 26%, 300px);
+    margin: 0;
+    position: sticky;
+    top: 10px;
+    z-index: 20;
+    display: flex;
+    align-items: center;
+    padding-inline: var(--sp-3);
+    background: #fffcfaf0;
+    -webkit-backdrop-filter: blur(10px);
+    backdrop-filter: blur(10px);
+    border: 1px solid var(--line);
+    border-inline-start-width: 0;
+    border-start-start-radius: 0;
+    border-end-start-radius: 0;
+  }
+
+  /* کادر جست‌وجو سطح خودش را ندارد؛ سطح، همان نوار یکپارچه است */
+  #panel-appointments .admin-search .input {
+    width: 100%;
+    padding-block: 8px;
+    padding-inline-start: 34px;
+    border: 0;
+    background: transparent;
+    box-shadow: none;
+  }
+
+  #panel-appointments .admin-search__ico {
+    inset-inline-start: var(--sp-3);
+  }
+
+  /* فهرست نوبت‌ها خط بعدی را کامل می‌گیرد */
+  #panel-appointments > *:not(.admin-filters):not(.admin-search) {
+    flex: 1 1 100%;
+    margin-top: var(--sp-3);
+  }
+}
+
+@media (max-width: 719px) {
+  /* روی موبایل نوار ابزار یک‌ردیفه نیست، پس فاصله‌ی زیرش لازم است */
+  body.on-admin .admin-filters {
+    margin-bottom: var(--sp-2);
+  }
+}
+
+/* --- ۵.۴ فاصله‌های عمودی --- */
+body.on-admin .admin-content {
+  padding-top: var(--sp-4);
+}
+
+body.on-admin .admin-search .input {
+  padding-block: 10px;
+  line-height: 1.5;
+}
+
+/* --- ۵.۵ کارت نوبت روی موبایل: سه بلوک روی هم → دو ردیف --- */
+@media (max-width: 639px) {
+  .admin-appt {
+    padding: var(--sp-3);
+  }
+
+  .admin-appt__top {
+    padding-bottom: var(--sp-2);
+  }
+
+  .admin-appt__body {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: var(--sp-2);
+    padding-top: var(--sp-2);
+  }
+
+  /* مراجعه‌کننده مهم‌ترین است: تمام‌عرض بالا، خدمت و مبلغ کنار هم */
+  .admin-appt__customer {
+    grid-column: 1 / -1;
+    order: -1;
+  }
+
+  .admin-appt__actions {
+    margin-top: var(--sp-3);
+    padding-top: var(--sp-2);
+  }
+}
