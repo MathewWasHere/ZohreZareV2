@@ -118,15 +118,36 @@ if ($senders['ok'] && !empty($smsCfg['from'])) {
    نمی‌شود. این بخش فقط پیش‌نمایش می‌دهد، پیامکی نمی‌فرستد. */
 function tplSampleVars(): array
 {
+    /* عمداً بلندترین نام خدمت و کوتاه‌ترین علت رد گذاشته شده تا
+       بدترین حالتِ طول پیامک دیده شود. */
     return [
         'code'    => '1234',
-        'date'    => 'چهارشنبه ۲۹ اردیبهشت',
+        'date'    => 'چهارشنبه ۱ مهر',
         'time'    => '۱۶:۳۰',
-        'service' => 'میکروبلیدینگ ابرو و بن مژه',
-        'reason'  => 'در آن ساعت نوبت دیگری ثبت شده بود',
+        'service' => 'دارک لیپس (روشن‌سازی لب‌های تیره)',
+        'reason'  => 'آن ساعت پر بود',
         'name'    => 'فاطمه محمدی نژاد',
         'phone'   => '۰۹۱۲۱۲۳۴۵۶۷',
     ];
+}
+
+/* رقم‌های فارسی، بدون وابستگی به کلاس Jalali (این صفحه آن را لود نمی‌کند) */
+function faNum(int $n): string
+{
+    return strtr((string) $n, ['0'=>'۰','1'=>'۱','2'=>'۲','3'=>'۳','4'=>'۴','5'=>'۵','6'=>'۶','7'=>'۷','8'=>'۸','9'=>'۹']);
+}
+
+/* طول پیامک به واحد UCS-2 و تعداد پیامک‌ها: هر پیامک ۷۰ کاراکتر،
+   پیامک‌های بعدی ۶۷ کاراکتر. اموجی هم ۲ کاراکتر حساب می‌شود. */
+function smsLength(string $text): array
+{
+    $chars = (int) (strlen(iconv('UTF-8', 'UTF-16LE', $text)) / 2);
+    $parts = 1;
+    while (70 + 67 * ($parts - 1) < $chars) {
+        $parts++;
+    }
+
+    return ['chars' => $chars, 'parts' => $parts];
 }
 
 $tplNames = [
@@ -140,10 +161,16 @@ $tplNames = [
 $sampleVars = tplSampleVars();
 foreach ($tplNames as $key => $label) {
     $tpl = $sms->template($key, $sampleVars);
+    if ($tpl === null) {
+        $rows[] = row('قالب ' . $label, false, 'خالی است — این پیامک فرستاده نمی‌شود');
+        continue;
+    }
+    $size = smsLength($tpl);
     $rows[] = row(
         'قالب ' . $label,
-        $tpl !== null,
-        $tpl !== null ? $tpl : 'خالی است — این پیامک فرستاده نمی‌شود'
+        true,
+        $tpl . '  —  (' . faNum($size['chars']) . ' کاراکتر، '
+            . faNum($size['parts']) . ' پیامک)'
     );
 }
 
