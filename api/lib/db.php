@@ -139,13 +139,22 @@ final class Db
              . ';dbname=' . ($cfg['name'] ?? '')
              . ';charset=' . ($cfg['charset'] ?? 'utf8mb4');
 
+        $options = [
+            PDO::ATTR_ERRMODE            => PDO::ERRMODE_EXCEPTION,
+            PDO::ATTR_DEFAULT_FETCH_MODE => PDO::FETCH_ASSOC,
+            /* آماده‌سازی واقعی سمت سرور — جلوی تزریق را محکم‌تر می‌گیرد */
+            PDO::ATTR_EMULATE_PREPARES   => false,
+        ];
+
+        /* نتیجه‌های سمت سرور همان‌جا بافر می‌شوند. بدون این، دستوری که
+           نتیجه برمی‌گرداند و نتیجه‌اش خوانده نشود، اتصال را قفل می‌کند
+           و دستور بعدی خطای «2014 unbuffered queries» می‌دهد. */
+        if (defined('PDO::MYSQL_ATTR_USE_BUFFERED_QUERY')) {
+            $options[PDO::MYSQL_ATTR_USE_BUFFERED_QUERY] = true;
+        }
+
         try {
-            self::$pdo = new PDO($dsn, $cfg['user'], $cfg['pass'], [
-                PDO::ATTR_ERRMODE            => PDO::ERRMODE_EXCEPTION,
-                PDO::ATTR_DEFAULT_FETCH_MODE => PDO::FETCH_ASSOC,
-                /* آماده‌سازی واقعی سمت سرور — جلوی تزریق را محکم‌تر می‌گیرد */
-                PDO::ATTR_EMULATE_PREPARES   => false,
-            ]);
+            self::$pdo = new PDO($dsn, $cfg['user'], $cfg['pass'], $options);
             self::$hostUsed = $host;
             return null;
         } catch (PDOException $e) {
@@ -302,7 +311,11 @@ final class Db
     /** یک ردیف */
     public static function one(string $sql, array $params = []): ?array
     {
-        $row = self::run($sql, $params)->fetch();
+        $st  = self::run($sql, $params);
+        $row = $st->fetch();
+        /* ردیف‌های باقی‌مانده را رد کن؛ وگرنه دستور بعدی روی همین اتصال
+           خطای ۲۰۱۴ می‌دهد. */
+        $st->closeCursor();
         return $row === false ? null : $row;
     }
 
@@ -315,8 +328,31 @@ final class Db
     /** یک مقدار تکی */
     public static function val(string $sql, array $params = [])
     {
-        $v = self::run($sql, $params)->fetchColumn();
+        $st = self::run($sql, $params);
+        $v  = $st->fetchColumn();
+        $st->closeCursor();
         return $v === false ? null : $v;
+    }
+
+    /**
+     * نتیجه‌های نخوانده را از اتصال پاک می‌کند — درمان خطای ۲۰۱۴.
+     * صفحه‌ی نصب بعد از دیدن این خطا، اتصال را این‌طور «خالی» می‌کند.
+     */
+    public static function drain(?PDO $pdo = null): void
+    {
+        $pdo = $pdo !== null ? $pdo : self::$pdo;
+        if (!$pdo instanceof PDO) {
+            return;
+        }
+        try {
+            $st = $pdo->query('SELECT 1');
+            if ($st instanceof PDOStatement) {
+                $st->fetchAll();
+                $st->closeCursor();
+            }
+        } catch (Throwable $e) {
+            /* اتصال دیگر سالم نیست؛ کاری نمی‌شود کرد */
+        }
     }
 
     /** شناسه‌ی یکتا به سبک فرانت: apt_9f3c… */

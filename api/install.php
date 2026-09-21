@@ -334,6 +334,38 @@ function describe_sql(string $st): string
     return mb_substr($flat, 0, 60, 'UTF-8');
 }
 
+/**
+ * اجرای یک دستور SQL و خواندن/بستن نتیجه‌اش.
+ *
+ * چرا query() و نه exec()؟ چون بعضی دستورهای schema.sql (مثل
+ * «EXECUTE zz_add_benefits» که برای اضافه‌کردن ستون شرطی است) یک
+ * نتیجه برمی‌گردانند. exec() آن نتیجه را نمی‌خواند و اتصال قفل
+ * می‌شود؛ بعد از آن هر دستور دیگری خطای
+ * «2014 Cannot execute queries while other unbuffered queries are active»
+ * می‌دهد. این‌جا هر نتیجه‌ای خوانده و بسته می‌شود.
+ */
+function run_sql(PDO $pdo, string $sql): void
+{
+    for ($attempt = 1; $attempt <= 2; $attempt++) {
+        try {
+            $st = $pdo->query($sql);
+            if ($st instanceof PDOStatement) {
+                $st->fetchAll();
+                $st->closeCursor();
+            }
+            return;
+        } catch (PDOException $e) {
+            /* اگر نتیجه‌ی دستور قبلی نخوانده مانده باشد، اتصال را خالی
+               می‌کنیم و همین دستور را یک بار دیگر اجرا می‌کنیم. */
+            if ($attempt === 1 && (int) ($e->errorInfo[1] ?? 0) === 2014) {
+                Db::drain($pdo);
+                continue;
+            }
+            throw $e;
+        }
+    }
+}
+
 /* ------------------------------------------------------------------
    اجرا
    ------------------------------------------------------------------ */
@@ -363,7 +395,7 @@ if ($doRun) {
             foreach ($statements as $st) {
                 $label = describe_sql($st);
                 try {
-                    $pdo->exec($st);
+                    run_sql($pdo, $st);
                     $results[] = ['ok' => true, 'label' => $label, 'msg' => 'انجام شد'];
                     $okCount++;
                 } catch (PDOException $e) {
@@ -419,15 +451,13 @@ if ($doLock) {
         if ($exists > 0) {
             $lockAlready = true;
         } else {
-            Db::conn()->exec(
-                "ALTER TABLE appointments
+            run_sql(Db::conn(), "ALTER TABLE appointments
                    ADD COLUMN slot_lock VARCHAR(20)
                      GENERATED ALWAYS AS (
                        CASE WHEN status IN ('pending','confirmed')
                             THEN CONCAT(`date`, ' ', `time`) ELSE NULL END
                      ) STORED,
-                   ADD UNIQUE KEY uk_appt_slot (slot_lock)"
-            );
+                   ADD UNIQUE KEY uk_appt_slot (slot_lock)");
             $lockDone = true;
         }
     } catch (Throwable $e) {
@@ -977,6 +1007,14 @@ if ($configExists && isset($_POST['fix_pass'])) {
         <code>localhost</code> بماند. اگر باز هم نشد، با پشتیبانی هاست
         تماس بگیرید و بگویید سرور MySQL پاسخ نمی‌دهد.
       </div>
+      <?php if (stripos($dbStateMsg, 'unbuffered') !== false || str_contains($dbStateMsg, '2014')): ?>
+        <div class="d" style="margin-top:8px">
+          این خطا یعنی نتیجه‌ی یک دستور قبلی خوانده نشده بود — به
+          <code>host</code> ربطی ندارد. در نسخه‌ی جدید
+          <code>api/install.php</code> حل شده است: فایل را دوباره آپلود
+          کنید و دوباره «ساخت جدول‌ها» را بزنید.
+        </div>
+      <?php endif; ?>
       <div class="d" style="margin-top:8px">
         <strong>تشخیص دقیق‌تر:</strong>
         <?= htmlspecialchars(Db::diagnoseConnectError($dbStateMsg), ENT_QUOTES, 'UTF-8') ?>
