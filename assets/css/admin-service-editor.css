@@ -1,0 +1,175 @@
+/* ==========================================================================
+   admin-service-editor.css — بهبود تجربه‌ی ویرایش خدمت در پنل مدیریت
+   زهره زارع — لایه‌ی مستقل، بدون دست‌زدن به pages.css
+   --------------------------------------------------------------------------
+   همه‌ی مقادیر از توکن‌های موجود پنل گرفته شده‌اند؛ هیچ رنگ یا اندازه‌ی
+   تازه‌ای خارج از سیستم طراحی اضافه نشده است.
+   ========================================================================== */
+
+/* --------------------------------------------------------------------------
+   ۱) ترمیم توکن زمان‌بندی
+   pages.css نُه بار به --t-fast ارجاع می‌دهد ولی این متغیر هیچ‌جا تعریف
+   نشده بود؛ یعنی همه‌ی آن انتقال‌ها بی‌اثر بودند و تغییر حالت‌ها پرشی
+   اتفاق می‌افتاد. با تعریفش، آن نُه مورد هم درست می‌شوند.
+   -------------------------------------------------------------------------- */
+:root {
+  --t-fast: 160ms;
+}
+
+/* --------------------------------------------------------------------------
+   ۲) کنترل‌های گزینه (افزودن / جابه‌جایی / حذف)
+   -------------------------------------------------------------------------- */
+.svc-var__btns {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  margin-inline-start: auto;
+  flex: 0 0 auto;
+}
+
+/* شماره و قیمت کنار هم بمانند و دکمه‌ها به انتهای سطر بروند */
+.svc-var__foot--top .svc-var__price {
+  margin-inline-end: auto;
+}
+
+.svc-var__btns .row-btn {
+  width: 32px;
+  height: 32px;
+}
+
+/* در ابتدا و انتهای فهرست، دکمه‌ی جابه‌جایی مربوطه غیرفعال می‌شود */
+.svc-var__btns .row-btn:disabled {
+  opacity: .35;
+  cursor: not-allowed;
+}
+
+.svc-var__btns .row-btn:disabled:hover {
+  color: var(--text-muted);
+  background: var(--cream-50);
+  border-color: var(--line);
+}
+
+/* گزینه‌های تازه تا وقتی نامی نگرفته‌اند، کمی متمایز باشند */
+.svc-var:not([data-vi]) {
+  border-color: var(--rose-300, #E8C4C4);
+  background: var(--blush-100, #FDF4F4);
+}
+
+/* --------------------------------------------------------------------------
+   ۳) دکمه‌ی «افزودن گزینه»
+   -------------------------------------------------------------------------- */
+.svc-add--var {
+  align-self: stretch;
+  width: 100%;
+  justify-content: center;
+  margin-top: var(--sp-2);
+  padding-block: 10px;
+}
+
+/* --------------------------------------------------------------------------
+   ۴) نوار پرش سریع بین بخش‌ها
+   -------------------------------------------------------------------------- */
+.svc-nav {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin-top: var(--sp-2);
+  padding: 4px;
+  overflow-x: auto;
+  scrollbar-width: none;
+  border: 1px solid var(--line);
+  border-radius: var(--r-lg);
+  background: var(--cream-50);
+}
+
+.svc-nav::-webkit-scrollbar {
+  display: none;
+}
+
+.svc-nav__link {
+  flex: 0 0 auto;
+  padding: 6px 12px;
+  font-family: inherit;
+  font-size: var(--fs-xs);
+  font-weight: 500;
+  color: var(--text-soft);
+  background: transparent;
+  border: 0;
+  border-radius: var(--r-sm);
+  cursor: pointer;
+  white-space: nowrap;
+  transition: background var(--t-fast) var(--ease), color var(--t-fast) var(--ease);
+}
+
+.svc-nav__link:hover {
+  color: var(--ink-900);
+  background: var(--cream-100);
+}
+
+.svc-nav__link:focus-visible {
+  outline: 2px solid var(--rose-400);
+  outline-offset: 2px;
+}
+
+/* هنگام پرش، بخش مقصد زیر نوار چسبان پنل پنهان نشود */
+.svc-group[id^="svc-sec-"] {
+  scroll-margin-top: calc(var(--header-h, 64px) + 84px);
+}
+
+/* --------------------------------------------------------------------------
+   ۵) نشانگر «ذخیره‌نشده»
+   -------------------------------------------------------------------------- */
+.svc-dirty-chip {
+  display: none;
+  align-items: center;
+  gap: 5px;
+  flex: 0 0 auto;
+  padding: 4px 10px;
+  font-size: var(--fs-xs);
+  font-weight: 500;
+  color: #8A5A12;
+  background: #FDF3E2;
+  border: 1px solid #F0DCB8;
+  border-radius: var(--r-full, 999px);
+}
+
+.svc-dirty-chip svg {
+  flex: 0 0 auto;
+}
+
+/* فقط وقتی تغییری ذخیره نشده باشد دیده می‌شود.
+   در مرورگرهای قدیمی که :has را نمی‌شناسند، نشانگر هرگز ظاهر نمی‌شود
+   — یعنی بدترین حالت، همان رفتار امروز است. */
+.svc-edit__bar:has([data-save].is-dirty) .svc-dirty-chip {
+  display: inline-flex;
+}
+
+/* --------------------------------------------------------------------------
+   ۶) اعتبارسنجی درجا
+   -------------------------------------------------------------------------- */
+.svc-field.is-invalid .input {
+  border-color: #C0392B;
+  background: #FDF2F1;
+}
+
+.svc-field.is-invalid .input:focus {
+  outline-color: #C0392B;
+}
+
+.svc-field__err {
+  display: block;
+  margin-top: 5px;
+  font-size: var(--fs-xs);
+  color: #C0392B;
+}
+
+/* --------------------------------------------------------------------------
+   ۷) احترام به تنظیم کاهش حرکت
+   -------------------------------------------------------------------------- */
+@media (prefers-reduced-motion: reduce) {
+  .svc-nav__link,
+  .svc-var__btns .row-btn,
+  .svc-add--var {
+    transition: none;
+  }
+}

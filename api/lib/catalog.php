@@ -104,6 +104,32 @@ final class Catalog
         return is_array($v) ? $v : [];
     }
 
+    /** کلید یکتا برای گزینه‌ی تازه. نام فارسی کلید اسکی نمی‌دهد، پس
+        در آن حالت یک کلید تصادفی ساخته می‌شود. */
+    private static function freshVariantKey(string $serviceId, string $name): string
+    {
+        $base = trim((string) preg_replace('/[^a-z0-9]+/', '-', strtolower($name)), '-');
+        if ($base === '' || strlen($base) < 2) {
+            $base = 'v-' . bin2hex(random_bytes(4));
+        }
+        $base = substr($base, 0, 28);
+
+        $candidate = $base;
+        $n         = 2;
+        while (Db::val(
+            'SELECT id FROM service_variants WHERE service_id = ? AND variant_key = ?',
+            [$serviceId, $candidate]
+        )) {
+            $candidate = $base . '-' . $n;
+            $n++;
+            if ($n > 500) {
+                $candidate = 'v-' . bin2hex(random_bytes(6));
+                break;
+            }
+        }
+        return $candidate;
+    }
+
     /**
      * ویرایش خدمت از پنل مدیریت.
      * فقط فیلدهایی که فرستاده شده‌اند تغییر می‌کنند.
@@ -163,31 +189,67 @@ final class Catalog
             Db::run('UPDATE services SET ' . implode(', ', $sets) . ' WHERE id = ?', $params);
         }
 
-        /* گزینه‌ها (قیمت و مدت) — کل فهرست جایگزین می‌شود */
+        /* گزینه‌ها (قیمت و مدت) — کل فهرست جایگزین می‌شود:
+           ردیف‌های موجود به‌روزرسانی، ردیف‌های تازه درج، و ردیف‌هایی که
+           دیگر در فهرست نیستند حذف می‌شوند. ترتیب نمایش هم از روی جایگاه
+           هر گزینه در همین آرایه نوشته می‌شود. */
         if (isset($in['variants']) && is_array($in['variants'])) {
+            $keep  = [];
+            $order = 0;
+
             foreach ($in['variants'] as $v) {
-                if (!isset($v['id'])) {
-                    continue;
+                $name = isset($v['name'])
+                    ? trim(mb_substr((string) $v['name'], 0, 120, 'UTF-8'))
+                    : '';
+                if ($name === '') {
+                    continue;   /* گزینه‌ی بی‌نام ردیف بی‌معنا می‌سازد */
                 }
+                $note  = isset($v['note'])
+                    ? mb_substr((string) $v['note'], 0, 300, 'UTF-8')
+                    : '';
+                $dur   = isset($v['duration_min'])
+                    ? max(0, (int) preg_replace('/\D/', '', Jalali::en((string) $v['duration_min'])))
+                    : 60;
+                $price = isset($v['price'])
+                    ? max(0, (int) preg_replace('/\D/', '', Jalali::en((string) $v['price'])))
+                    : 0;
+
+                $key = isset($v['id']) ? trim((string) $v['id']) : '';
+                $existing = $key !== '' && Db::val(
+                    'SELECT id FROM service_variants WHERE service_id = ? AND variant_key = ?',
+                    [$id, $key]
+                );
+
+                if ($existing) {
+                    Db::run(
+                        'UPDATE service_variants
+                            SET name = ?, note = ?, duration_min = ?, price = ?, sort_order = ?
+                          WHERE service_id = ? AND variant_key = ?',
+                        [$name, $note, $dur, $price, $order, $id, $key]
+                    );
+                } else {
+                    $key = self::freshVariantKey($id, $name);
+                    Db::run(
+                        'INSERT INTO service_variants
+                            (service_id, variant_key, name, note, duration_min, price, sort_order)
+                         VALUES (?, ?, ?, ?, ?, ?, ?)',
+                        [$id, $key, $name, $note, $dur, $price, $order]
+                    );
+                }
+
+                $keep[] = $key;
+                $order++;
+            }
+
+            /* اگر فهرست خالی برگشته باشد چیزی حذف نمی‌کنیم؛ پاک‌کردن همه‌ی
+               گزینه‌ها خدمت را بی‌قیمت می‌کند و به‌احتمال زیاد نتیجه‌ی یک
+               خطای سمت کلاینت است، نه قصد مدیر. */
+            if ($keep) {
+                $ph = implode(', ', array_fill(0, count($keep), '?'));
                 Db::run(
-                    'UPDATE service_variants
-                        SET name = COALESCE(?, name),
-                            note = COALESCE(?, note),
-                            duration_min = COALESCE(?, duration_min),
-                            price = COALESCE(?, price)
-                      WHERE service_id = ? AND variant_key = ?',
-                    [
-                        isset($v['name']) ? mb_substr((string) $v['name'], 0, 120, 'UTF-8') : null,
-                        isset($v['note']) ? mb_substr((string) $v['note'], 0, 300, 'UTF-8') : null,
-                        isset($v['duration_min'])
-                            ? max(0, (int) preg_replace('/\D/', '', Jalali::en((string) $v['duration_min'])))
-                            : null,
-                        isset($v['price'])
-                            ? max(0, (int) preg_replace('/\D/', '', Jalali::en((string) $v['price'])))
-                            : null,
-                        $id,
-                        (string) $v['id'],
-                    ]
+                    'DELETE FROM service_variants
+                      WHERE service_id = ? AND variant_key NOT IN (' . $ph . ')',
+                    array_merge([$id], $keep)
                 );
             }
         }
