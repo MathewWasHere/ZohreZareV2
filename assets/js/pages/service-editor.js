@@ -9,9 +9,11 @@
    چه چیزی اضافه می‌کند:
      • افزودن، حذف و جابه‌جایی گزینه‌های قیمت
        (پنل تا پیش از این فقط گزینه‌های موجود را ویرایش می‌کرد)
+     • حذف قابل‌بازگشت — نوار «واگرد» تا یک اشتباه، داده‌ای را از بین نبرد
      • به‌روزشدن زنده‌ی برچسب قیمت هر گزینه هم‌زمان با تایپ
      • نوار پرش سریع بین بخش‌های ویرایشگر
      • نشانگر «ذخیره‌نشده» و هشدار پیش از بستن صفحه
+     • اعلام تغییرات برای صفحه‌خوان‌ها و مدیریت درست فوکوس
    ========================================================================== */
 (function (W) {
   'use strict';
@@ -23,10 +25,12 @@
   var icon = ZZ.icon;
   var CUR  = (ZZ.config && ZZ.config.booking && ZZ.config.booking.currency) || 'تومان';
 
-  /* اگر مجموعه‌ی گزینه‌ها عوض شود، حافظه‌ی محلی پنل دیگر با سرور
-     هم‌خوان نیست و ذخیره‌ی بعدی ردیف تکراری می‌سازد. */
-  var varSetChanged = false;
-  var saveClicked   = false;
+  var UNDO_MS = 9000;
+
+  var lastDeleted = null;   /* { wrap, node, before, name } */
+  var undoTimer   = null;
+  var saveInFlight = false;
+  var saveSynced   = false; /* آیا آخرین ذخیره فهرست کامل گزینه‌ها را برگرداند؟ */
 
   /* ------------------------------------------------------------- ابزارها */
 
@@ -56,6 +60,24 @@
     return (typeof u.money === 'function' ? u.money(n) : String(n)) + ' ' + CUR;
   }
 
+  /* صفحه‌خوان‌ها تغییرات ساختاری را از DOM نمی‌فهمند؛ یک ناحیه‌ی اعلام
+     برایشان نگه می‌داریم. ناحیه پیش از هر اعلام ساخته می‌شود تا از همان
+     ابتدا در دسترس باشد. */
+  function ensureLive() {
+    var live = document.getElementById('zzSvcLive');
+    if (!live) {
+      live = el('<p id="zzSvcLive" class="zz-sr" role="status" aria-live="polite"></p>');
+      document.body.appendChild(live);
+    }
+    return live;
+  }
+
+  function announce(msg) {
+    var live = ensureLive();
+    live.textContent = '';
+    W.setTimeout(function () { live.textContent = msg; }, 40);
+  }
+
   /* پنل وضعیت «تغییر ذخیره‌نشده» را فقط از رویداد input روی فیلدها
      می‌فهمد؛ اما افزودن یا حذف گزینه هیچ رویداد input تولید نمی‌کند.
      پس یک رویداد ساختگی روی یکی از فیلدها می‌فرستیم و در کنارش، به‌عنوان
@@ -73,10 +95,12 @@
     });
   }
 
-  /* شماره‌ها و وضعیت دکمه‌های جابه‌جایی را با ترتیب تازه هم‌تراز می‌کند */
+  /* شماره‌ها، برچسب گروه برای صفحه‌خوان و وضعیت دکمه‌های جابه‌جایی را با
+     ترتیب تازه هم‌تراز می‌کند. */
   function syncControls(wrap) {
     var cards = u.$$('.svc-var', wrap);
     var last  = cards.length - 1;
+    var total = u.toFa(cards.length);
 
     cards.forEach(function (card, i) {
       var num = u.$('.svc-var__num', card);
@@ -86,11 +110,81 @@
       var price = u.$('.svc-var__price', card);
       if (price) { price.setAttribute('data-price-live', i); }
 
+      /* هر گزینه یک گروه نام‌دار است تا فیلدهایش بی‌نام و بی‌مرجع خوانده نشوند */
+      if (card.getAttribute('role') !== 'group') { card.setAttribute('role', 'group'); }
+      var aria = 'گزینه ' + label + ' از ' + total;
+      if (card.getAttribute('aria-label') !== aria) { card.setAttribute('aria-label', aria); }
+
       var up   = u.$('[data-var-up]', card);
       var down = u.$('[data-var-down]', card);
       if (up)   { up.disabled   = (i === 0); }
       if (down) { down.disabled = (i === last); }
     });
+
+    return cards;
+  }
+
+  /* پس از یک ذخیره‌ی موفق، حافظه‌ی محلی پنل دقیقاً همان فهرست سرور است و
+     سرور هم به همان ترتیب آرایه برمی‌گرداند. پس شماره‌ی ارجاع هر کارت را
+     با جایگاهش در DOM هم‌تراز می‌کنیم تا ذخیره‌ی بعدی ردیف تکراری نسازد.
+     (پیش‌تر به‌جای این کار کل صفحه نوسازی می‌شد.) */
+  function resyncIndices(wrap) {
+    u.$$('.svc-var', wrap).forEach(function (card, i) {
+      card.setAttribute('data-vi', i);
+    });
+  }
+
+  /* -------------------------------------------------------- نوار واگرد */
+
+  function undoBarRemove() {
+    if (undoTimer) { W.clearTimeout(undoTimer); undoTimer = null; }
+    var bar = u.$('.svc-undo');
+    if (bar && bar.parentNode) { bar.parentNode.removeChild(bar); }
+  }
+
+  function undoReset() {
+    undoBarRemove();
+    lastDeleted = null;
+  }
+
+  function showUndo(wrap, node, before, name) {
+    undoBarRemove();
+    lastDeleted = { wrap: wrap, node: node, before: before, name: name };
+
+    wrap.appendChild(el(
+      '<div class="svc-undo" role="status">'
+      + icon('alert', null, 14)
+      + '<span class="svc-undo__txt">گزینه «' + u.esc(name) + '» حذف شد.</span>'
+      + '<button type="button" class="svc-undo__btn" data-var-undo="1">واگرد</button>'
+      + '</div>'
+    ));
+
+    undoTimer = W.setTimeout(function () {
+      undoBarRemove();
+      lastDeleted = null;
+    }, UNDO_MS);
+  }
+
+  function undoDelete() {
+    if (!lastDeleted) { return; }
+    var d = lastDeleted;
+    var wrap = d.wrap;
+    if (!wrap || !document.body.contains(wrap)) { undoReset(); return; }
+
+    if (d.before && d.before.parentNode === wrap) {
+      wrap.insertBefore(d.node, d.before);
+    } else {
+      wrap.insertBefore(d.node, u.$('[data-add-var]', wrap) || null);
+    }
+
+    undoBarRemove();
+    lastDeleted = null;
+    syncControls(wrap);
+    markDirty();
+
+    var name = u.$('[data-f="name"]', d.node);
+    if (name) { name.focus(); }
+    announce('گزینه «' + d.name + '» بازگردانده شد.');
   }
 
   /* -------------------------------------------------------- گزینه‌ها */
@@ -141,10 +235,10 @@
 
     var card = newVariantCard();
     wrap.insertBefore(card, btn);
-    syncControls(wrap);
+    var cards = syncControls(wrap);
 
-    varSetChanged = true;
     markDirty();
+    announce('گزینه تازه افزوده شد. ' + u.toFa(cards.length) + ' گزینه.');
 
     var name = u.$('[data-f="name"]', card);
     if (name) { name.focus(); }
@@ -155,15 +249,27 @@
     var wrap = variantWrap(btn);
     if (!card || !wrap) { return; }
 
-    if (u.$$('.svc-var', wrap).length <= 1) {
+    var cards = u.$$('.svc-var', wrap);
+    if (cards.length <= 1) {
       notify('حداقل یک گزینه لازم است؛ خدمت بدون قیمت معنا ندارد.');
       return;
     }
 
+    var idx    = cards.indexOf(card);
+    var before = card.nextElementSibling;
+    var field  = u.$('[data-f="name"]', card);
+    var name   = (field && field.value.trim()) || ('گزینه ' + u.toFa(idx + 1));
+
     wrap.removeChild(card);
-    syncControls(wrap);
-    varSetChanged = true;
+    var rest = syncControls(wrap);
     markDirty();
+    showUndo(wrap, card, before, name);
+
+    /* فوکوس نباید به بدنه‌ی صفحه پرت شود؛ روی گزینه‌ی بعدی (یا قبلی) می‌ماند */
+    var target = rest[Math.min(idx, rest.length - 1)];
+    var focusEl = target && (u.$('[data-var-del]', target) || u.$('[data-f="name"]', target));
+    if (!focusEl) { focusEl = u.$('[data-add-var]', wrap); }
+    if (focusEl) { focusEl.focus(); }
   }
 
   function moveVariant(btn, dir) {
@@ -175,9 +281,15 @@
     if (!sib || !sib.classList || !sib.classList.contains('svc-var')) { return; }
 
     if (dir === -1) { wrap.insertBefore(card, sib); } else { wrap.insertBefore(sib, card); }
-    syncControls(wrap);
-    varSetChanged = true;
+    var cards = syncControls(wrap);
     markDirty();
+
+    /* دکمه‌ی همین جهت ممکن است الان در انتهای فهرست غیرفعال شده باشد */
+    var cands = [u.$('[data-var-up]', card), u.$('[data-var-down]', card)];
+    var focusEl = cands.filter(function (b) { return b && !b.disabled; })[0] || u.$('[data-var-del]', card);
+    if (focusEl) { focusEl.focus(); }
+
+    announce('گزینه به جایگاه ' + u.toFa(cards.indexOf(card) + 1) + ' منتقل شد.');
   }
 
   /* ------------------------------------------------------------- تزئین */
@@ -241,27 +353,73 @@
     ));
   }
 
-  /* پنل بعد از ذخیره، فهرست گزینه‌ها را در حافظه‌ی محلی دست‌نخورده
-     می‌گذارد؛ پس اگر مجموعه‌ی گزینه‌ها عوض شده باشد، همان یک بار صفحه را
-     نوسازی می‌کنیم تا فهرست با سرور هم‌خوان شود. کمی صبر می‌کنیم تا
-     پیام «ذخیره شد» دیده شود. */
+  /* --------------------------------------------------- ذخیره و هم‌خوانی */
+
+  /* پاسخ سرور فقط وقتی «کامل» است که فهرست گزینه‌ها را با کلیدهایشان
+     برگرداند. همان شرطی که در Ja() پنل هم بررسی می‌شود. */
+  function isServerList(res) {
+    return !!(res && Array.isArray(res.variants) && res.variants.length
+      && res.variants.every(function (v) { return v && v.id; }));
+  }
+
+  /* مسیر ذخیره‌ی پنل را نگاه می‌داریم تا بدانیم پاسخ، فهرست کامل را
+     داشت یا نه — چون فقط در حالت اول می‌توان بی‌نوسازی صفحه ادامه داد. */
+  function wrapApi() {
+    var A = ZZ.appointments && ZZ.appointments.admin;
+    if (!A || typeof A.updateService !== 'function' || A.__zzWrapped) { return; }
+
+    var orig = A.updateService;
+    A.updateService = function () {
+      var p = orig.apply(this, arguments);
+      if (!p || typeof p.then !== 'function') { return p; }
+      return p.then(function (res) {
+        saveSynced = isServerList(res);
+        return res;
+      }, function (err) {
+        saveSynced = false;
+        throw err;
+      });
+    };
+    A.__zzWrapped = true;
+  }
+
   function watchSave(edit) {
     if (edit.__zzSaveWatch) { return; }
     edit.__zzSaveWatch = true;
 
+    /* پنل در پایان ذخیره، is-loading و is-dirty را در دو تغییر جداگانه
+       برمی‌دارد؛ پس بلافاصله تصمیم نمی‌گیریم و کمی صبر می‌کنیم تا هر دو
+       بنشینند. */
     new MutationObserver(function () {
-      if (!varSetChanged || !saveClicked) { return; }
-      if (edit.querySelector('[data-save].is-dirty')) { return; }
+      if (!saveInFlight) { return; }
+      var save = u.$('[data-save]', edit);
+      if (!save || save.classList.contains('is-loading')) { return; }
 
-      varSetChanged = false;
-      saveClicked = false;
-      W.setTimeout(function () { W.location.reload(); }, 700);
+      W.setTimeout(function () {
+        if (!saveInFlight) { return; }
+        var btn = u.$('[data-save]', edit);
+        if (!btn || btn.classList.contains('is-loading')) { return; }
+
+        saveInFlight = false;
+        if (btn.classList.contains('is-dirty')) { return; }   /* ذخیره نشد */
+
+        var wrap = u.$('.svc-vars', edit);
+        if (saveSynced) {
+          /* حافظه‌ی محلی حالا همان فهرست سرور است؛ فقط ارجاع‌ها را هم‌تراز کن */
+          if (wrap) { resyncIndices(wrap); }
+          undoReset();
+        } else if (wrap && W.location && W.location.reload) {
+          /* اگر پاسخ فهرست کامل را نداشت، تنها راه امن، نوسازی صفحه است */
+          W.setTimeout(function () { W.location.reload(); }, 500);
+        }
+      }, 60);
     }).observe(edit, { subtree: true, attributes: true, attributeFilter: ['class'] });
   }
 
   function decorate() {
     var edit = editRoot();
     if (!edit) { return; }
+    ensureLive();
     decorateVariants(edit);
     decorateSections(edit);
     decorateDirty(edit);
@@ -289,6 +447,9 @@
     var add = t.closest('[data-add-var]');
     if (add) { addVariant(add); return; }
 
+    var undo = t.closest('[data-var-undo]');
+    if (undo) { undoDelete(); return; }
+
     var del = t.closest('[data-var-del]');
     if (del) { deleteVariant(del); return; }
 
@@ -298,7 +459,11 @@
     var down = t.closest('[data-var-down]');
     if (down) { moveVariant(down, 1); return; }
 
-    if (t.closest('[data-save]')) { saveClicked = true; }
+    if (t.closest('[data-save]')) {
+      saveInFlight = true;
+      saveSynced = false;
+      undoReset();
+    }
   }, true);
 
   /* برچسب قیمت هر گزینه هم‌زمان با تایپ به‌روز شود.
@@ -345,6 +510,8 @@
   /* ---------------------------------------------------------- راه‌اندازی */
 
   function boot() {
+    wrapApi();
+
     var root = document.getElementById('adminRoot');
     if (!root) { return; }
 
