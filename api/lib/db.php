@@ -24,9 +24,27 @@ final class Db
      */
     private static $throwOnConnectError = false;
 
+    /** میزبانی که واقعاً با آن وصل شدیم (ممکن است localhost باشد). */
+    private static $hostUsed = '';
+
+    /** آیا اتصال با localhost جایگزین شد؟ (host اشتباه در config.php) */
+    private static $hostFallback = false;
+
     public static function throwOnConnectError(bool $on = true): void
     {
         self::$throwOnConnectError = $on;
+    }
+
+    /** میزبانی که اتصال با آن برقرار شد. */
+    public static function hostUsed(): string
+    {
+        return self::$hostUsed;
+    }
+
+    /** اگر true باشد، db.host در config.php اشتباه است و باید localhost شود. */
+    public static function hostWasFallback(): bool
+    {
+        return self::$hostFallback;
     }
 
     public static function conn(): PDO
@@ -35,38 +53,57 @@ final class Db
             return self::$pdo;
         }
 
-        $cfg = Config::get('db');
-        $dsn = 'mysql:host=' . $cfg['host']
-             . ';dbname=' . $cfg['name']
-             . ';charset=' . ($cfg['charset'] ?? 'utf8mb4');
+        $cfg  = Config::get('db');
+        $host = (string) ($cfg['host'] ?? 'localhost');
 
-        /* روی هاست‌های اشتراکی، گاهی سرور دیتابیس فقط برای یک لحظه
-           جواب نمی‌دهد («سقف اتصال پر شده» یا شلوغی موقت). یک بار
-           دیگر بعد از چند صدم ثانیه امتحان می‌کنیم — در بیشتر موارد
-           همین تلاش دوم جواب می‌دهد و کاربر خطا نمی‌بیند. */
+        /* ترتیب میزبان‌ها: اول همان مقداری که در config.php نوشته شده،
+           و اگر خطا از نوعِ «میزبان» بود، یک بار هم localhost. روی
+           cPanel تقریباً همه‌ی حساب‌ها روی localhost کار می‌کنند، پس
+           این کار سایت را بدون دست‌زدن به config.php برمی‌گرداند. */
+        $hosts = [$host];
+        if (!self::isLocalhost($host)) {
+            $hosts[] = 'localhost';
+        }
+
         $err = null;
-        for ($try = 1; $try <= 2; $try++) {
-            try {
-                self::$pdo = new PDO($dsn, $cfg['user'], $cfg['pass'], [
-                    PDO::ATTR_ERRMODE            => PDO::ERRMODE_EXCEPTION,
-                    PDO::ATTR_DEFAULT_FETCH_MODE => PDO::FETCH_ASSOC,
-                    /* آماده‌سازی واقعی سمت سرور — جلوی تزریق را محکم‌تر می‌گیرد */
-                    PDO::ATTR_EMULATE_PREPARES   => false,
-                ]);
-                $err = null;
-                break;
-            } catch (PDOException $e) {
-                $err = $e;
-                /* پیام واقعی فقط در لاگ؛ کاربر نباید نام دیتابیس را ببیند */
-                error_log('[zz] اتصال به دیتابیس ناموفق (تلاش ' . $try . '): ' . $e->getMessage());
-                if ($try === 1 && self::connErrorIsTransient($e->getMessage())) {
-                    /* تأخیر تصادفی تا وقتی چند درخواست هم‌زمان (صفحه‌ی رزرو
-                       چند API را با هم صدا می‌زند) همه با هم دوباره تلاش نکنند. */
+        $connected = false;
+
+        foreach ($hosts as $i => $h) {
+            $isLast = ($i === count($hosts) - 1);
+
+            for ($try = 1; $try <= 2; $try++) {
+                $err = self::attempt($cfg, $h, $try);
+
+                if ($err === null) {           /* وصل شد */
+                    $connected = true;
+                    break 2;
+                }
+
+                /* شلوغی موقت / پر بودن سقف اتصال: یک بار دیگر، با تأخیر
+                   تصادفی تا چند درخواست هم‌زمان با هم تلاش نکنند. */
+                if ($try === 1 && self::connErrorIsTransient($err->getMessage())) {
                     usleep(150000 + random_int(0, 300000));
                     continue;
                 }
                 break;
             }
+
+            /* میزبان بعدی فقط وقتی امتحان می‌شود که خطا مربوط به خودِ
+               میزبان باشد؛ خطای رمز یا نام دیتابیس با عوض کردن host
+               حل نمی‌شود و فقط سایت را کند می‌کند. */
+            if ($isLast || !self::connectionLevelFailure($err->getMessage())) {
+                break;
+            }
+        }
+
+        if ($connected && self::$hostUsed !== $host) {
+            self::$hostFallback = true;
+            error_log(
+                '[zz] دیتابیس با میزبان «' . $host . '» وصل نشد، ولی با localhost وصل شد. '
+                . 'برای اینکه هر بار یک تلاش اضافه انجام نشود، db.host را در api/config.php '
+                . 'به localhost تغییر دهید.'
+            );
+            $err = null;
         }
 
         if ($err !== null) {
@@ -90,6 +127,77 @@ final class Db
         return self::$pdo;
     }
 
+
+    /**
+     * یک تلاش برای اتصال با یک میزبان مشخص.
+     * روی موفقیت self::$pdo را پر می‌کند و null برمی‌گرداند؛
+     * روی خطا استثنا را (بدون پرتاب) برمی‌گرداند تا بالادست تصمیم بگیرد.
+     */
+    private static function attempt(array $cfg, string $host, int $try): ?PDOException
+    {
+        $dsn = 'mysql:host=' . $host
+             . ';dbname=' . ($cfg['name'] ?? '')
+             . ';charset=' . ($cfg['charset'] ?? 'utf8mb4');
+
+        try {
+            self::$pdo = new PDO($dsn, $cfg['user'], $cfg['pass'], [
+                PDO::ATTR_ERRMODE            => PDO::ERRMODE_EXCEPTION,
+                PDO::ATTR_DEFAULT_FETCH_MODE => PDO::FETCH_ASSOC,
+                /* آماده‌سازی واقعی سمت سرور — جلوی تزریق را محکم‌تر می‌گیرد */
+                PDO::ATTR_EMULATE_PREPARES   => false,
+            ]);
+            self::$hostUsed = $host;
+            return null;
+        } catch (PDOException $e) {
+            /* پیام واقعی فقط در لاگ؛ کاربر نباید نام دیتابیس را ببیند */
+            error_log(
+                '[zz] اتصال به دیتابیس ناموفق (میزبان ' . $host . '، تلاش ' . $try . '): '
+                . $e->getMessage()
+            );
+            return $e;
+        }
+    }
+
+    /** آیا این میزبان خودش localhost است؟ */
+    private static function isLocalhost(string $host): bool
+    {
+        $host = strtolower(trim($host));
+        return in_array($host, ['', 'localhost', '127.0.0.1', '::1', 'localhost:3306'], true);
+    }
+
+    /**
+     * آیا خطا مربوط به «راه‌رسیدن به سرور دیتابیس» است (و نه رمز و
+     * نام دیتابیس)؟ فقط این نوع خطا با امتحان‌کردن میزبان دیگر ممکن
+     * است حل شود: میزبان اشتباه، اجازه‌نداشتن این میزبان، یا کاربری
+     * که فقط از localhost معتبر است.
+     */
+    private static function connectionLevelFailure(string $msg): bool
+    {
+        foreach ([
+            '[2002]', '[2003]', '[2005]', '[1130]',
+            'Connection refused',
+            "Can't connect",
+            'No such file or directory',
+            'Unknown MySQL server host',
+            'getaddrinfo',
+            'not allowed to connect',
+            'gone away',
+        ] as $needle) {
+            if (stripos($msg, $needle) !== false) {
+                return true;
+            }
+        }
+
+        /* «Access denied … (using password: YES/NO)» می‌تواند یعنی این
+           کاربر از این میزبان مجاز نیست و با localhost درست می‌شود؛
+           ولی «… to database …» خطای ۱۰۴۴ است: کاربر به آن دیتابیس
+           وصل نشده و عوض کردن host کمکی نمی‌کند. */
+        if (stripos($msg, 'Access denied') !== false && stripos($msg, 'to database') === false) {
+            return true;
+        }
+
+        return false;
+    }
 
     /**
      * خطاهایی که «گذرا» هستند و ارزش یک تلاش دوباره را دارند:

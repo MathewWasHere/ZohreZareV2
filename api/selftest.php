@@ -231,6 +231,25 @@ if (is_file(__DIR__ . '/config.php')) {
         check('اتصال به دیتابیس', 'ok', 'MySQL/MariaDB ' . $ver);
         $dbOk = true;
 
+        /* اگر اتصال با localhost جایگزین شده باشد، یعنی مقدار db.host
+           در config.php از اول اشتباه بوده و باید اصلاح شود. */
+        $cfgHost = '';
+        try {
+            $d = Config::get('db');
+            $cfgHost = is_array($d) ? (string) ($d['host'] ?? '') : '';
+        } catch (Throwable $ignore) {
+        }
+
+        check(
+            'میزبان دیتابیس',
+            Db::hostWasFallback() ? 'warn' : 'ok',
+            Db::hostWasFallback()
+                ? 'اتصال با localhost برقرار شد، نه با «' . $cfgHost . '» که در config.php '
+                  . 'نوشته شده. مقدار db.host را به localhost تغییر دهید تا هر درخواست '
+                  . 'یک تلاش اضافه نداشته باشد.'
+                : Db::hostUsed()
+        );
+
         /* ظرفیت سرور دیتابیس — روی هاست اشتراکی، پر بودن اتصال‌ها
            شایع‌ترین دلیل خطای «ارتباط برقرار نشد» است. */
         try {
