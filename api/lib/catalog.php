@@ -1,1 +1,282 @@
-PD9waHAKLyogPT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT0KICAgY2F0YWxvZy5waHAg4oCUINiu2K/Zhdin2KoKCiAgINmF2K3YqtmI2KfbjCDYtdmB2K3Zh+KAjNuMINmH2LEg2K7Yr9mF2KogKNmF2KrZhuKAjNmH2KfYjCDZgdmH2LHYs9iq4oCM2YfYp9iMINm+2LHYs9i04oCM2YfYpykg2K/YsSDYs9iq2YjZhuKAjNmH2KfbjCBKU09OCiAgINmG2q/Zh9iv2KfYsduMINmF24zigIzYtNmI2K8uINqG2LHYpyBKU09OINmIINmG2Ycg2KzYr9mI2YQg2KzYr9in2J8g2obZiNmGINin24zZhuKAjNmH2Kcg2YHZgti3INmB2YfYsdiz2KrigIzZh9in24wKICAg2YXYqtmG24zZkCDZhtmF2KfbjNi024zigIzYp9mG2K/YjCDZh9uM2obigIzZiNmC2Kog2KzYr9in2q/Yp9mG2Ycg2KzYs9iq4oCM2YjYrNmIINuM2Kcgam9pbiDZhtmF24zigIzYtNmI2YbYr9iMINmICiAgINmG2q/Zh+KAjNiv2KfYtNiq2YbYtNin2YYg2K/YsSDbjNqpINiz2KrZiNmG2Iwg2YjbjNix2KfbjNi0INin2LIg2b7ZhtmEINmF2K/bjNix24zYqiDYsdinINiz2KfYr9mHINmF24zigIzaqdmG2K8uCiAgID09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09ICovCgppZiAoIWRlZmluZWQoJ1paX0FQUCcpKSB7CiAgICBodHRwX3Jlc3BvbnNlX2NvZGUoNDAzKTsKICAgIGV4aXQoJ9iv2LPYqtix2LPbjCDZhdiz2KrZgtuM2YUg2YXYrNin2LIg2YbbjNiz2KouJyk7Cn0KCmZpbmFsIGNsYXNzIENhdGFsb2cKewogICAgLyoqINmB2YfYsdiz2Kog2K7Yr9mF2KfYqiDZgdi52KfZhNiMINmH2YXYsdin2Ycg2q/YstuM2YbZh+KAjNmH2KcgKi8KICAgIHB1YmxpYyBzdGF0aWMgZnVuY3Rpb24gYWxsKGJvb2wgJGluY2x1ZGVJbmFjdGl2ZSA9IGZhbHNlKTogYXJyYXkKICAgIHsKICAgICAgICAkcm93cyA9IERiOjphbGwoCiAgICAgICAgICAgICdTRUxFQ1QgKiBGUk9NIHNlcnZpY2VzJyAuICgkaW5jbHVkZUluYWN0aXZlID8gJycgOiAnIFdIRVJFIGFjdGl2ZSA9IDEnKQogICAgICAgICAgICAuICcgT1JERVIgQlkgc29ydF9vcmRlciwgdGl0bGUnCiAgICAgICAgKTsKICAgICAgICBpZiAoISRyb3dzKSB7CiAgICAgICAgICAgIHJldHVybiBbXTsKICAgICAgICB9CgogICAgICAgIC8qINmH2YXZh+KAjNuMINqv2LLbjNmG2YfigIzZh9inINix2Kcg24zaqeKAjNis2Kcg2YXbjOKAjNqv24zYsduM2YUg2KrYpyDYqNmHINin2LLYp9uMINmH2LEg2K7Yr9mF2Kog24zaqQogICAgICAgICAgINm+2LHYs+KAjNmI2KzZiNuMINis2K/YpyDZhtiy2YbbjNmFLiAqLwogICAgICAgICR2YXJpYW50cyA9IFtdOwogICAgICAgIGZvcmVhY2ggKERiOjphbGwoJ1NFTEVDVCAqIEZST00gc2VydmljZV92YXJpYW50cyBPUkRFUiBCWSBzb3J0X29yZGVyLCBpZCcpIGFzICR2KSB7CiAgICAgICAgICAgICR2YXJpYW50c1skdlsnc2VydmljZV9pZCddXVtdID0gWwogICAgICAgICAgICAgICAgJ2lkJyAgICAgICAgICAgPT4gJHZbJ3ZhcmlhbnRfa2V5J10sCiAgICAgICAgICAgICAgICAnbmFtZScgICAgICAgICA9PiAkdlsnbmFtZSddLAogICAgICAgICAgICAgICAgJ25vdGUnICAgICAgICAgPT4gJHZbJ25vdGUnXSA/PyAnJywKICAgICAgICAgICAgICAgICdkdXJhdGlvbl9taW4nID0+IChpbnQpICR2WydkdXJhdGlvbl9taW4nXSwKICAgICAgICAgICAgICAgICdwcmljZScgICAgICAgID0+IChpbnQpICR2WydwcmljZSddLAogICAgICAgICAgICBdOwogICAgICAgIH0KCiAgICAgICAgJG91dCA9IFtdOwogICAgICAgIGZvcmVhY2ggKCRyb3dzIGFzICRzKSB7CiAgICAgICAgICAgICRvdXRbXSA9IHNlbGY6OnB1YmxpY1JvdygkcywgJHZhcmlhbnRzWyRzWydpZCddXSA/PyBbXSk7CiAgICAgICAgfQogICAgICAgIHJldHVybiAkb3V0OwogICAgfQoKICAgIHB1YmxpYyBzdGF0aWMgZnVuY3Rpb24gYnlTbHVnKHN0cmluZyAkc2x1Zyk6ID9hcnJheQogICAgewogICAgICAgICRzID0gRGI6Om9uZSgnU0VMRUNUICogRlJPTSBzZXJ2aWNlcyBXSEVSRSBzbHVnID0gPyBBTkQgYWN0aXZlID0gMScsIFskc2x1Z10pOwogICAgICAgIGlmICghJHMpIHsKICAgICAgICAgICAgcmV0dXJuIG51bGw7CiAgICAgICAgfQogICAgICAgICR2YXJpYW50cyA9IFtdOwogICAgICAgIGZvcmVhY2ggKERiOjphbGwoCiAgICAgICAgICAgICdTRUxFQ1QgKiBGUk9NIHNlcnZpY2VfdmFyaWFudHMgV0hFUkUgc2VydmljZV9pZCA9ID8gT1JERVIgQlkgc29ydF9vcmRlciwgaWQnLAogICAgICAgICAgICBbJHNbJ2lkJ11dCiAgICAgICAgKSBhcyAkdikgewogICAgICAgICAgICAkdmFyaWFudHNbXSA9IFsKICAgICAgICAgICAgICAgICdpZCcgICAgICAgICAgID0+ICR2Wyd2YXJpYW50X2tleSddLAogICAgICAgICAgICAgICAgJ25hbWUnICAgICAgICAgPT4gJHZbJ25hbWUnXSwKICAgICAgICAgICAgICAgICdub3RlJyAgICAgICAgID0+ICR2Wydub3RlJ10gPz8gJycsCiAgICAgICAgICAgICAgICAnZHVyYXRpb25fbWluJyA9PiAoaW50KSAkdlsnZHVyYXRpb25fbWluJ10sCiAgICAgICAgICAgICAgICAncHJpY2UnICAgICAgICA9PiAoaW50KSAkdlsncHJpY2UnXSwKICAgICAgICAgICAgXTsKICAgICAgICB9CiAgICAgICAgcmV0dXJuIHNlbGY6OnB1YmxpY1JvdygkcywgJHZhcmlhbnRzKTsKICAgIH0KCiAgICAvKiog2LHYr9uM2YEg4oaSINmC2KfZhNioIG1hcFNlcnZpY2Ug2K/YsSBiYWNrZW5kLWJyaWRnZS5qcyAqLwogICAgcHJpdmF0ZSBzdGF0aWMgZnVuY3Rpb24gcHVibGljUm93KGFycmF5ICRzLCBhcnJheSAkdmFyaWFudHMpOiBhcnJheQogICAgewogICAgICAgIHJldHVybiBbCiAgICAgICAgICAgICdpZCcgICAgICAgICAgID0+ICRzWydpZCddLAogICAgICAgICAgICAnc2x1ZycgICAgICAgICA9PiAkc1snc2x1ZyddLAogICAgICAgICAgICAndGl0bGUnICAgICAgICA9PiAkc1sndGl0bGUnXSwKICAgICAgICAgICAgJ3Nob3J0JyAgICAgICAgPT4gJHNbJ3Nob3J0X3RleHQnXSA/PyAnJywKICAgICAgICAgICAgJ2ltYWdlJyAgICAgICAgPT4gJHNbJ2ltYWdlJ10gPz8gJycsCiAgICAgICAgICAgICdpY29uJyAgICAgICAgID0+ICRzWydpY29uJ10gPz8gJycsCiAgICAgICAgICAgICdpZ19saW5rJyAgICAgID0+ICRzWydpZ19saW5rJ10gPzogbnVsbCwKICAgICAgICAgICAgLyog2YjYtti524zYqiDZgdi52KfZhC/YutuM2LHZgdi52KfZhCDigJQg2LXZgdit2YfigIzbjCDYudmF2YjZhduMINmB2YLYtyDYrtiv2YXYquKAjNmH2KfbjCDZgdi52KfZhCDYsdinCiAgICAgICAgICAgICAgINmF24zigIzar9uM2LHYryAo2YfZhduM2LTZhyDbsSnYjCDYp9mF2Kcg2b7ZhtmEINmF2K/bjNix24zYqiDZgdmH2LHYs9iqINqp2KfZhdmEINix2Kcg2YXbjOKAjNqv24zYsdivCiAgICAgICAgICAgICAgINmIINio2KfbjNivINio2K/Yp9mG2K8g2qnYr9in2YUg2LrbjNix2YHYudin2YQg2KfYs9iqLiAqLwogICAgICAgICAgICAnaXNfYWN0aXZlJyAgICA9PiAoaW50KSAoJHNbJ2FjdGl2ZSddID8/IDEpLAogICAgICAgICAgICAnZHVyYXRpb25fbWluJyA9PiAoaW50KSAkc1snZHVyYXRpb25fbWluJ10sCiAgICAgICAgICAgICdwcmljZV9mcm9tJyAgID0+IChpbnQpICRzWydwcmljZV9mcm9tJ10sCiAgICAgICAgICAgICd2YXJpYW50cycgICAgID0+ICR2YXJpYW50cywKICAgICAgICAgICAgJ2Rlc2NyaXB0aW9uJyAgPT4gc2VsZjo6anNvbigkc1snZGVzY3JpcHRpb24nXSksCiAgICAgICAgICAgICdpbmNsdWRlcycgICAgID0+IHNlbGY6Ompzb24oJHNbJ2luY2x1ZGVzX2pzb24nXSksCiAgICAgICAgICAgICdhZnRlcmNhcmUnICAgID0+IHNlbGY6Ompzb24oJHNbJ2FmdGVyY2FyZSddKSwKICAgICAgICAgICAgJ2dvb2RfZm9yJyAgICAgPT4gc2VsZjo6anNvbigkc1snZ29vZF9mb3InXSksCiAgICAgICAgICAgICdmYXEnICAgICAgICAgID0+IHNlbGY6Ompzb24oJHNbJ2ZhcSddKSwKICAgICAgICBdOwogICAgfQoKICAgIC8qKiDYs9iq2YjZhiBKU09OIOKGkiDYotix2KfbjNmH2Iwg2KjYpyDYqtit2YXZhCDZhdmC2K/Yp9ixINiu2LHYp9ioICovCiAgICBwcml2YXRlIHN0YXRpYyBmdW5jdGlvbiBqc29uKCRyYXcpOiBhcnJheQogICAgewogICAgICAgIGlmICghJHJhdykgewogICAgICAgICAgICByZXR1cm4gW107CiAgICAgICAgfQogICAgICAgICR2ID0ganNvbl9kZWNvZGUoKHN0cmluZykgJHJhdywgdHJ1ZSk7CiAgICAgICAgcmV0dXJuIGlzX2FycmF5KCR2KSA/ICR2IDogW107CiAgICB9CgogICAgLyoqINqp2YTbjNivINuM2qnYqtinINio2LHYp9uMINqv2LLbjNmG2YfigIzbjCDYqtin2LLZhy4g2YbYp9mFINmB2KfYsdiz24wg2qnZhNuM2K8g2KfYs9qp24wg2YbZhduM4oCM2K/Zh9iv2Iwg2b7YswogICAgICAgINiv2LEg2KLZhiDYrdin2YTYqiDbjNqpINqp2YTbjNivINiq2LXYp9iv2YHbjCDYs9in2K7YqtmHINmF24zigIzYtNmI2K8uICovCiAgICBwcml2YXRlIHN0YXRpYyBmdW5jdGlvbiBmcmVzaFZhcmlhbnRLZXkoc3RyaW5nICRzZXJ2aWNlSWQsIHN0cmluZyAkbmFtZSk6IHN0cmluZwogICAgewogICAgICAgICRiYXNlID0gdHJpbSgoc3RyaW5nKSBwcmVnX3JlcGxhY2UoJy9bXmEtejAtOV0rLycsICctJywgc3RydG9sb3dlcigkbmFtZSkpLCAnLScpOwogICAgICAgIGlmICgkYmFzZSA9PT0gJycgfHwgc3RybGVuKCRiYXNlKSA8IDIpIHsKICAgICAgICAgICAgJGJhc2UgPSAndi0nIC4gYmluMmhleChyYW5kb21fYnl0ZXMoNCkpOwogICAgICAgIH0KICAgICAgICAkYmFzZSA9IHN1YnN0cigkYmFzZSwgMCwgMjgpOwoKICAgICAgICAkY2FuZGlkYXRlID0gJGJhc2U7CiAgICAgICAgJG4gICAgICAgICA9IDI7CiAgICAgICAgd2hpbGUgKERiOjp2YWwoCiAgICAgICAgICAgICdTRUxFQ1QgaWQgRlJPTSBzZXJ2aWNlX3ZhcmlhbnRzIFdIRVJFIHNlcnZpY2VfaWQgPSA/IEFORCB2YXJpYW50X2tleSA9ID8nLAogICAgICAgICAgICBbJHNlcnZpY2VJZCwgJGNhbmRpZGF0ZV0KICAgICAgICApKSB7CiAgICAgICAgICAgICRjYW5kaWRhdGUgPSAkYmFzZSAuICctJyAuICRuOwogICAgICAgICAgICAkbisrOwogICAgICAgICAgICBpZiAoJG4gPiA1MDApIHsKICAgICAgICAgICAgICAgICRjYW5kaWRhdGUgPSAndi0nIC4gYmluMmhleChyYW5kb21fYnl0ZXMoNikpOwogICAgICAgICAgICAgICAgYnJlYWs7CiAgICAgICAgICAgIH0KICAgICAgICB9CiAgICAgICAgcmV0dXJuICRjYW5kaWRhdGU7CiAgICB9CgogICAgLyoqCiAgICAgKiDZiNuM2LHYp9uM2LQg2K7Yr9mF2Kog2KfYsiDZvtmG2YQg2YXYr9uM2LHbjNiqLgogICAgICog2YHZgti3INmB24zZhNiv2YfYp9uM24wg2qnZhyDZgdix2LPYqtin2K/ZhyDYtNiv2YfigIzYp9mG2K8g2KrYutuM24zYsSDZhduM4oCM2qnZhtmG2K8uCiAgICAgKi8KICAgIHB1YmxpYyBzdGF0aWMgZnVuY3Rpb24gdXBkYXRlKHN0cmluZyAkaWQsIGFycmF5ICRpbik6IGFycmF5CiAgICB7CiAgICAgICAgJHMgPSBEYjo6b25lKCdTRUxFQ1QgKiBGUk9NIHNlcnZpY2VzIFdIRVJFIGlkID0gPycsIFskaWRdKTsKICAgICAgICBpZiAoISRzKSB7CiAgICAgICAgICAgIEh0dHA6OmZhaWwoNDA0LCAn2K7Yr9mF2Kog2b7bjNiv2Kcg2YbYtNivLicpOwogICAgICAgIH0KCiAgICAgICAgJHNldHMgICA9IFtdOwogICAgICAgICRwYXJhbXMgPSBbXTsKCiAgICAgICAgJHRleHRGaWVsZHMgPSBbCiAgICAgICAgICAgICd0aXRsZScgICA9PiAndGl0bGUnLAogICAgICAgICAgICAnc2hvcnQnICAgPT4gJ3Nob3J0X3RleHQnLAogICAgICAgICAgICAnaW1hZ2UnICAgPT4gJ2ltYWdlJywKICAgICAgICAgICAgJ2ljb24nICAgID0+ICdpY29uJywKICAgICAgICAgICAgJ2lnX2xpbmsnID0+ICdpZ19saW5rJywKICAgICAgICBdOwogICAgICAgIGZvcmVhY2ggKCR0ZXh0RmllbGRzIGFzICRrZXkgPT4gJGNvbCkgewogICAgICAgICAgICBpZiAoYXJyYXlfa2V5X2V4aXN0cygka2V5LCAkaW4pKSB7CiAgICAgICAgICAgICAgICAkc2V0c1tdICAgPSAkY29sIC4gJyA9ID8nOwogICAgICAgICAgICAgICAgJHBhcmFtc1tdID0gbWJfc3Vic3RyKHRyaW0oKHN0cmluZykgJGluWyRrZXldKSwgMCwgNTAwLCAnVVRGLTgnKTsKICAgICAgICAgICAgfQogICAgICAgIH0KCiAgICAgICAgZm9yZWFjaCAoWydkdXJhdGlvbl9taW4nLCAncHJpY2VfZnJvbSddIGFzICRjb2wpIHsKICAgICAgICAgICAgaWYgKGFycmF5X2tleV9leGlzdHMoJGNvbCwgJGluKSkgewogICAgICAgICAgICAgICAgJHNldHNbXSAgID0gJGNvbCAuICcgPSA/JzsKICAgICAgICAgICAgICAgICRwYXJhbXNbXSA9IG1heCgwLCAoaW50KSBwcmVnX3JlcGxhY2UoJy9cRC8nLCAnJywgSmFsYWxpOjplbigoc3RyaW5nKSAkaW5bJGNvbF0pKSk7CiAgICAgICAgICAgIH0KICAgICAgICB9CgogICAgICAgICRsaXN0RmllbGRzID0gWwogICAgICAgICAgICAnZGVzY3JpcHRpb24nID0+ICdkZXNjcmlwdGlvbicsCiAgICAgICAgICAgICdpbmNsdWRlcycgICAgPT4gJ2luY2x1ZGVzX2pzb24nLAogICAgICAgICAgICAnYWZ0ZXJjYXJlJyAgID0+ICdhZnRlcmNhcmUnLAogICAgICAgICAgICAnZ29vZF9mb3InICAgID0+ICdnb29kX2ZvcicsCiAgICAgICAgICAgICdmYXEnICAgICAgICAgPT4gJ2ZhcScsCiAgICAgICAgXTsKICAgICAgICBmb3JlYWNoICgkbGlzdEZpZWxkcyBhcyAka2V5ID0+ICRjb2wpIHsKICAgICAgICAgICAgaWYgKGFycmF5X2tleV9leGlzdHMoJGtleSwgJGluKSAmJiBpc19hcnJheSgkaW5bJGtleV0pKSB7CiAgICAgICAgICAgICAgICAkc2V0c1tdICAgPSAkY29sIC4gJyA9ID8nOwogICAgICAgICAgICAgICAgJHBhcmFtc1tdID0ganNvbl9lbmNvZGUoJGluWyRrZXldLCBKU09OX1VORVNDQVBFRF9VTklDT0RFKTsKICAgICAgICAgICAgfQogICAgICAgIH0KCiAgICAgICAgaWYgKGFycmF5X2tleV9leGlzdHMoJ2FjdGl2ZScsICRpbikpIHsKICAgICAgICAgICAgJHNldHNbXSAgID0gJ2FjdGl2ZSA9ID8nOwogICAgICAgICAgICAkcGFyYW1zW10gPSAkaW5bJ2FjdGl2ZSddID8gMSA6IDA7CiAgICAgICAgfQoKICAgICAgICBpZiAoJHNldHMpIHsKICAgICAgICAgICAgJHBhcmFtc1tdID0gJGlkOwogICAgICAgICAgICBEYjo6cnVuKCdVUERBVEUgc2VydmljZXMgU0VUICcgLiBpbXBsb2RlKCcsICcsICRzZXRzKSAuICcgV0hFUkUgaWQgPSA/JywgJHBhcmFtcyk7CiAgICAgICAgfQoKICAgICAgICAvKiDar9iy24zZhtmH4oCM2YfYpyAo2YLbjNmF2Kog2Ygg2YXYr9iqKSDigJQg2qnZhCDZgdmH2LHYs9iqINis2KfbjNqv2LLbjNmGINmF24zigIzYtNmI2K86CiAgICAgICAgICAg2LHYr9uM2YHigIzZh9in24wg2YXZiNis2YjYryDYqNmH4oCM2LHZiNiy2LHYs9in2YbbjNiMINix2K/bjNmB4oCM2YfYp9uMINiq2KfYstmHINiv2LHYrNiMINmIINix2K/bjNmB4oCM2YfYp9uM24wg2qnZhwogICAgICAgICAgINiv24zar9ixINiv2LEg2YHZh9ix2LPYqiDZhtuM2LPYqtmG2K8g2K3YsNmBINmF24zigIzYtNmI2YbYry4g2KrYsdiq24zYqCDZhtmF2KfbjNi0INmH2YUg2KfYsiDYsdmI24wg2KzYp9uM2q/Yp9mHCiAgICAgICAgICAg2YfYsSDar9iy24zZhtmHINiv2LEg2YfZhduM2YYg2KLYsdin24zZhyDZhtmI2LTYqtmHINmF24zigIzYtNmI2K8uICovCiAgICAgICAgaWYgKGlzc2V0KCRpblsndmFyaWFudHMnXSkgJiYgaXNfYXJyYXkoJGluWyd2YXJpYW50cyddKSkgewogICAgICAgICAgICAka2VlcCAgPSBbXTsKICAgICAgICAgICAgJG9yZGVyID0gMDsKCiAgICAgICAgICAgIGZvcmVhY2ggKCRpblsndmFyaWFudHMnXSBhcyAkdikgewogICAgICAgICAgICAgICAgJG5hbWUgPSBpc3NldCgkdlsnbmFtZSddKQogICAgICAgICAgICAgICAgICAgID8gdHJpbShtYl9zdWJzdHIoKHN0cmluZykgJHZbJ25hbWUnXSwgMCwgMTIwLCAnVVRGLTgnKSkKICAgICAgICAgICAgICAgICAgICA6ICcnOwogICAgICAgICAgICAgICAgaWYgKCRuYW1lID09PSAnJykgewogICAgICAgICAgICAgICAgICAgIGNvbnRpbnVlOyAgIC8qINqv2LLbjNmG2YfigIzbjCDYqNuM4oCM2YbYp9mFINix2K/bjNmBINio24zigIzZhdi52YbYpyDZhduM4oCM2LPYp9iy2K8gKi8KICAgICAgICAgICAgICAgIH0KICAgICAgICAgICAgICAgICRub3RlICA9IGlzc2V0KCR2Wydub3RlJ10pCiAgICAgICAgICAgICAgICAgICAgPyBtYl9zdWJzdHIoKHN0cmluZykgJHZbJ25vdGUnXSwgMCwgMzAwLCAnVVRGLTgnKQogICAgICAgICAgICAgICAgICAgIDogJyc7CiAgICAgICAgICAgICAgICAkZHVyICAgPSBpc3NldCgkdlsnZHVyYXRpb25fbWluJ10pCiAgICAgICAgICAgICAgICAgICAgPyBtYXgoMCwgKGludCkgcHJlZ19yZXBsYWNlKCcvXEQvJywgJycsIEphbGFsaTo6ZW4oKHN0cmluZykgJHZbJ2R1cmF0aW9uX21pbiddKSkpCiAgICAgICAgICAgICAgICAgICAgOiA2MDsKICAgICAgICAgICAgICAgICRwcmljZSA9IGlzc2V0KCR2WydwcmljZSddKQogICAgICAgICAgICAgICAgICAgID8gbWF4KDAsIChpbnQpIHByZWdfcmVwbGFjZSgnL1xELycsICcnLCBKYWxhbGk6OmVuKChzdHJpbmcpICR2WydwcmljZSddKSkpCiAgICAgICAgICAgICAgICAgICAgOiAwOwoKICAgICAgICAgICAgICAgICRrZXkgPSBpc3NldCgkdlsnaWQnXSkgPyB0cmltKChzdHJpbmcpICR2WydpZCddKSA6ICcnOwogICAgICAgICAgICAgICAgJGV4aXN0aW5nID0gJGtleSAhPT0gJycgJiYgRGI6OnZhbCgKICAgICAgICAgICAgICAgICAgICAnU0VMRUNUIGlkIEZST00gc2VydmljZV92YXJpYW50cyBXSEVSRSBzZXJ2aWNlX2lkID0gPyBBTkQgdmFyaWFudF9rZXkgPSA/JywKICAgICAgICAgICAgICAgICAgICBbJGlkLCAka2V5XQogICAgICAgICAgICAgICAgKTsKCiAgICAgICAgICAgICAgICBpZiAoJGV4aXN0aW5nKSB7CiAgICAgICAgICAgICAgICAgICAgRGI6OnJ1bigKICAgICAgICAgICAgICAgICAgICAgICAgJ1VQREFURSBzZXJ2aWNlX3ZhcmlhbnRzCiAgICAgICAgICAgICAgICAgICAgICAgICAgICBTRVQgbmFtZSA9ID8sIG5vdGUgPSA/LCBkdXJhdGlvbl9taW4gPSA/LCBwcmljZSA9ID8sIHNvcnRfb3JkZXIgPSA/CiAgICAgICAgICAgICAgICAgICAgICAgICAgV0hFUkUgc2VydmljZV9pZCA9ID8gQU5EIHZhcmlhbnRfa2V5ID0gPycsCiAgICAgICAgICAgICAgICAgICAgICAgIFskbmFtZSwgJG5vdGUsICRkdXIsICRwcmljZSwgJG9yZGVyLCAkaWQsICRrZXldCiAgICAgICAgICAgICAgICAgICAgKTsKICAgICAgICAgICAgICAgIH0gZWxzZSB7CiAgICAgICAgICAgICAgICAgICAgJGtleSA9IHNlbGY6OmZyZXNoVmFyaWFudEtleSgkaWQsICRuYW1lKTsKICAgICAgICAgICAgICAgICAgICBEYjo6cnVuKAogICAgICAgICAgICAgICAgICAgICAgICAnSU5TRVJUIElOVE8gc2VydmljZV92YXJpYW50cwogICAgICAgICAgICAgICAgICAgICAgICAgICAgKHNlcnZpY2VfaWQsIHZhcmlhbnRfa2V5LCBuYW1lLCBub3RlLCBkdXJhdGlvbl9taW4sIHByaWNlLCBzb3J0X29yZGVyKQogICAgICAgICAgICAgICAgICAgICAgICAgVkFMVUVTICg/LCA/LCA/LCA/LCA/LCA/LCA/KScsCiAgICAgICAgICAgICAgICAgICAgICAgIFskaWQsICRrZXksICRuYW1lLCAkbm90ZSwgJGR1ciwgJHByaWNlLCAkb3JkZXJdCiAgICAgICAgICAgICAgICAgICAgKTsKICAgICAgICAgICAgICAgIH0KCiAgICAgICAgICAgICAgICAka2VlcFtdID0gJGtleTsKICAgICAgICAgICAgICAgICRvcmRlcisrOwogICAgICAgICAgICB9CgogICAgICAgICAgICAvKiDYp9qv2LEg2YHZh9ix2LPYqiDYrtin2YTbjCDYqNix2q/YtNiq2Ycg2KjYp9i02K8g2obbjNiy24wg2K3YsNmBINmG2YXbjOKAjNqp2YbbjNmF2Jsg2b7Yp9qp4oCM2qnYsdiv2YYg2YfZhdmH4oCM24wKICAgICAgICAgICAgICAg2q/YstuM2YbZh+KAjNmH2Kcg2K7Yr9mF2Kog2LHYpyDYqNuM4oCM2YLbjNmF2Kog2YXbjOKAjNqp2YbYryDZiCDYqNmH4oCM2KfYrdiq2YXYp9mEINiy24zYp9ivINmG2KrbjNis2YfigIzbjCDbjNqpCiAgICAgICAgICAgICAgINiu2LfYp9uMINiz2YXYqiDaqdmE2KfbjNmG2Kog2KfYs9iq2Iwg2YbZhyDZgti12K8g2YXYr9uM2LEuICovCiAgICAgICAgICAgIGlmICgka2VlcCkgewogICAgICAgICAgICAgICAgJHBoID0gaW1wbG9kZSgnLCAnLCBhcnJheV9maWxsKDAsIGNvdW50KCRrZWVwKSwgJz8nKSk7CiAgICAgICAgICAgICAgICBEYjo6cnVuKAogICAgICAgICAgICAgICAgICAgICdERUxFVEUgRlJPTSBzZXJ2aWNlX3ZhcmlhbnRzCiAgICAgICAgICAgICAgICAgICAgICBXSEVSRSBzZXJ2aWNlX2lkID0gPyBBTkQgdmFyaWFudF9rZXkgTk9UIElOICgnIC4gJHBoIC4gJyknLAogICAgICAgICAgICAgICAgICAgIGFycmF5X21lcmdlKFskaWRdLCAka2VlcCkKICAgICAgICAgICAgICAgICk7CiAgICAgICAgICAgIH0KICAgICAgICB9CgogICAgICAgIC8qIMKr2KfYsiDigKYg2KrZiNmF2KfZhsK7INix2YjbjCDaqdin2LHYquKAjNmH2Kcg2KjYp9uM2K8g2YfZhduM2LTZhyDYqNinINin2LHYstin2YbigIzYqtix24zZhiDar9iy24zZhtmHCiAgICAgICAgICAg2KjYrtmI2KfZhtiv2Iwg2Yjar9ix2YbZhyDZgtuM2YXYqiDZhtmF2KfbjNi04oCM2K/Yp9iv2YfigIzYtNiv2Ycg2KjYpyDZiNin2YLYuduM2Kog2YHYsdmCINmF24zigIzaqdmG2K8uICovCiAgICAgICAgJG1pbiA9IERiOjp2YWwoJ1NFTEVDVCBNSU4ocHJpY2UpIEZST00gc2VydmljZV92YXJpYW50cyBXSEVSRSBzZXJ2aWNlX2lkID0gPycsIFskaWRdKTsKICAgICAgICBpZiAoJG1pbiAhPT0gbnVsbCAmJiAhYXJyYXlfa2V5X2V4aXN0cygncHJpY2VfZnJvbScsICRpbikpIHsKICAgICAgICAgICAgRGI6OnJ1bignVVBEQVRFIHNlcnZpY2VzIFNFVCBwcmljZV9mcm9tID0gPyBXSEVSRSBpZCA9ID8nLCBbKGludCkgJG1pbiwgJGlkXSk7CiAgICAgICAgfQoKICAgICAgICAvKiDYsdiv24zZgSDYqtin2LLZhyDYsdinINmH2YXbjNi02Ycg2KjYsdqv2LHYr9in2YYg4oCUINit2KrbjCDYp9qv2LEg2YfZhduM2YYg2KfZhNin2YYg2LrbjNix2YHYudin2YQg2LTYr9mHCiAgICAgICAgICAg2KjYp9i02K8gKGJ5U2x1ZyDZgdmC2Lcg2K7Yr9mF2KrigIzZh9in24wg2YHYudin2YQg2LHYpyDYqNix2YXbjOKAjNqv2LHYr9in2YbYryDZiCDZvtmG2YQg2KjYudivINin2LIKICAgICAgICAgICDYutuM2LHZgdi52KfZhOKAjCDaqdix2K/ZhiDZhtio2KfbjNivINm+2KfYs9iuINiu2KfZhNuMINio2q/bjNix2K8pLiAqLwogICAgICAgICR2YXJpYW50cyA9IFtdOwogICAgICAgIGZvcmVhY2ggKERiOjphbGwoCiAgICAgICAgICAgICdTRUxFQ1QgKiBGUk9NIHNlcnZpY2VfdmFyaWFudHMgV0hFUkUgc2VydmljZV9pZCA9ID8gT1JERVIgQlkgc29ydF9vcmRlciwgaWQnLAogICAgICAgICAgICBbJGlkXQogICAgICAgICkgYXMgJHYpIHsKICAgICAgICAgICAgJHZhcmlhbnRzW10gPSBbCiAgICAgICAgICAgICAgICAnaWQnICAgICAgICAgICA9PiAkdlsndmFyaWFudF9rZXknXSwKICAgICAgICAgICAgICAgICduYW1lJyAgICAgICAgID0+ICR2WyduYW1lJ10sCiAgICAgICAgICAgICAgICAnbm90ZScgICAgICAgICA9PiAkdlsnbm90ZSddID8/ICcnLAogICAgICAgICAgICAgICAgJ2R1cmF0aW9uX21pbicgPT4gKGludCkgJHZbJ2R1cmF0aW9uX21pbiddLAogICAgICAgICAgICAgICAgJ3ByaWNlJyAgICAgICAgPT4gKGludCkgJHZbJ3ByaWNlJ10sCiAgICAgICAgICAgIF07CiAgICAgICAgfQogICAgICAgIHJldHVybiBzZWxmOjpwdWJsaWNSb3coKERiOjpvbmUoJ1NFTEVDVCAqIEZST00gc2VydmljZXMgV0hFUkUgaWQgPSA/JywgWyRpZF0pID86ICRzKSwgJHZhcmlhbnRzKTsKICAgIH0KfQo=
+<?php
+/* ==========================================================================
+   catalog.php — خدمات
+
+   محتوای صفحه‌ی هر خدمت (متن‌ها، فهرست‌ها، پرسش‌ها) در ستون‌های JSON
+   نگهداری می‌شود. چرا JSON و نه جدول جدا؟ چون این‌ها فقط فهرست‌های
+   متنیِ نمایشی‌اند، هیچ‌وقت جداگانه جست‌وجو یا join نمی‌شوند، و
+   نگه‌داشتنشان در یک ستون، ویرایش از پنل مدیریت را ساده می‌کند.
+   ========================================================================== */
+
+if (!defined('ZZ_APP')) {
+    http_response_code(403);
+    exit('دسترسی مستقیم مجاز نیست.');
+}
+
+final class Catalog
+{
+    /** فهرست خدمات فعال، همراه گزینه‌ها */
+    public static function all(bool $includeInactive = false): array
+    {
+        $rows = Db::all(
+            'SELECT * FROM services' . ($includeInactive ? '' : ' WHERE active = 1')
+            . ' ORDER BY sort_order, title'
+        );
+        if (!$rows) {
+            return [];
+        }
+
+        /* همه‌ی گزینه‌ها را یک‌جا می‌گیریم تا به ازای هر خدمت یک
+           پرس‌وجوی جدا نزنیم. */
+        $variants = [];
+        foreach (Db::all('SELECT * FROM service_variants ORDER BY sort_order, id') as $v) {
+            $variants[$v['service_id']][] = [
+                'id'           => $v['variant_key'],
+                'name'         => $v['name'],
+                'note'         => $v['note'] ?? '',
+                'duration_min' => (int) $v['duration_min'],
+                'price'        => (int) $v['price'],
+            ];
+        }
+
+        $out = [];
+        foreach ($rows as $s) {
+            $out[] = self::publicRow($s, $variants[$s['id']] ?? []);
+        }
+        return $out;
+    }
+
+    public static function bySlug(string $slug): ?array
+    {
+        $s = Db::one('SELECT * FROM services WHERE slug = ? AND active = 1', [$slug]);
+        if (!$s) {
+            return null;
+        }
+        $variants = [];
+        foreach (Db::all(
+            'SELECT * FROM service_variants WHERE service_id = ? ORDER BY sort_order, id',
+            [$s['id']]
+        ) as $v) {
+            $variants[] = [
+                'id'           => $v['variant_key'],
+                'name'         => $v['name'],
+                'note'         => $v['note'] ?? '',
+                'duration_min' => (int) $v['duration_min'],
+                'price'        => (int) $v['price'],
+            ];
+        }
+        return self::publicRow($s, $variants);
+    }
+
+    /** ردیف → قالب mapService در backend-bridge.js */
+    private static function publicRow(array $s, array $variants): array
+    {
+        return [
+            'id'           => $s['id'],
+            'slug'         => $s['slug'],
+            'title'        => $s['title'],
+            'short'        => $s['short_text'] ?? '',
+            'image'        => $s['image'] ?? '',
+            'icon'         => $s['icon'] ?? '',
+            'ig_link'      => $s['ig_link'] ?: null,
+            /* وضعیت فعال/غیرفعال — صفحه‌ی عمومی فقط خدمت‌های فعال را
+               می‌گیرد (همیشه ۱)، اما پنل مدیریت فهرست کامل را می‌گیرد
+               و باید بداند کدام غیرفعال است. */
+            'is_active'    => (int) ($s['active'] ?? 1),
+            'duration_min' => (int) $s['duration_min'],
+            'price_from'   => (int) $s['price_from'],
+            'variants'     => $variants,
+            'description'  => self::json($s['description']),
+            'includes'     => self::json($s['includes_json']),
+            'aftercare'    => self::json($s['aftercare']),
+            'good_for'     => self::json($s['good_for']),
+            'faq'          => self::json($s['faq']),
+        ];
+    }
+
+    /** ستون JSON → آرایه، با تحمل مقدار خراب */
+    private static function json($raw): array
+    {
+        if (!$raw) {
+            return [];
+        }
+        $v = json_decode((string) $raw, true);
+        return is_array($v) ? $v : [];
+    }
+
+    /** کلید یکتا برای گزینه‌ی تازه. نام فارسی کلید اسکی نمی‌دهد، پس
+        در آن حالت یک کلید تصادفی ساخته می‌شود. */
+    private static function freshVariantKey(string $serviceId, string $name): string
+    {
+        $base = trim((string) preg_replace('/[^a-z0-9]+/', '-', strtolower($name)), '-');
+        if ($base === '' || strlen($base) < 2) {
+            $base = 'v-' . bin2hex(random_bytes(4));
+        }
+        $base = substr($base, 0, 28);
+
+        $candidate = $base;
+        $n         = 2;
+        while (Db::val(
+            'SELECT id FROM service_variants WHERE service_id = ? AND variant_key = ?',
+            [$serviceId, $candidate]
+        )) {
+            $candidate = $base . '-' . $n;
+            $n++;
+            if ($n > 500) {
+                $candidate = 'v-' . bin2hex(random_bytes(6));
+                break;
+            }
+        }
+        return $candidate;
+    }
+
+    /**
+     * ویرایش خدمت از پنل مدیریت.
+     * فقط فیلدهایی که فرستاده شده‌اند تغییر می‌کنند.
+     */
+    public static function update(string $id, array $in): array
+    {
+        $s = Db::one('SELECT * FROM services WHERE id = ?', [$id]);
+        if (!$s) {
+            Http::fail(404, 'خدمت پیدا نشد.');
+        }
+
+        $sets   = [];
+        $params = [];
+
+        $textFields = [
+            'title'   => 'title',
+            'short'   => 'short_text',
+            'image'   => 'image',
+            'icon'    => 'icon',
+            'ig_link' => 'ig_link',
+        ];
+        foreach ($textFields as $key => $col) {
+            if (array_key_exists($key, $in)) {
+                $sets[]   = $col . ' = ?';
+                $params[] = mb_substr(trim((string) $in[$key]), 0, 500, 'UTF-8');
+            }
+        }
+
+        foreach (['duration_min', 'price_from'] as $col) {
+            if (array_key_exists($col, $in)) {
+                $sets[]   = $col . ' = ?';
+                $params[] = max(0, (int) preg_replace('/\D/', '', Jalali::en((string) $in[$col])));
+            }
+        }
+
+        $listFields = [
+            'description' => 'description',
+            'includes'    => 'includes_json',
+            'aftercare'   => 'aftercare',
+            'good_for'    => 'good_for',
+            'faq'         => 'faq',
+        ];
+        foreach ($listFields as $key => $col) {
+            if (array_key_exists($key, $in) && is_array($in[$key])) {
+                $sets[]   = $col . ' = ?';
+                $params[] = json_encode($in[$key], JSON_UNESCAPED_UNICODE);
+            }
+        }
+
+        if (array_key_exists('active', $in)) {
+            $sets[]   = 'active = ?';
+            $params[] = $in['active'] ? 1 : 0;
+        }
+
+        if ($sets) {
+            $params[] = $id;
+            Db::run('UPDATE services SET ' . implode(', ', $sets) . ' WHERE id = ?', $params);
+        }
+
+        /* گزینه‌ها (قیمت و مدت) — کل فهرست جایگزین می‌شود:
+           ردیف‌های موجود به‌روزرسانی، ردیف‌های تازه درج، و ردیف‌هایی که
+           دیگر در فهرست نیستند حذف می‌شوند. ترتیب نمایش هم از روی جایگاه
+           هر گزینه در همین آرایه نوشته می‌شود. */
+        if (isset($in['variants']) && is_array($in['variants'])) {
+            $keep  = [];
+            $order = 0;
+
+            foreach ($in['variants'] as $v) {
+                $name = isset($v['name'])
+                    ? trim(mb_substr((string) $v['name'], 0, 120, 'UTF-8'))
+                    : '';
+                if ($name === '') {
+                    continue;   /* گزینه‌ی بی‌نام ردیف بی‌معنا می‌سازد */
+                }
+                $note  = isset($v['note'])
+                    ? mb_substr((string) $v['note'], 0, 300, 'UTF-8')
+                    : '';
+                $dur   = isset($v['duration_min'])
+                    ? max(0, (int) preg_replace('/\D/', '', Jalali::en((string) $v['duration_min'])))
+                    : 60;
+                $price = isset($v['price'])
+                    ? max(0, (int) preg_replace('/\D/', '', Jalali::en((string) $v['price'])))
+                    : 0;
+
+                $key = isset($v['id']) ? trim((string) $v['id']) : '';
+                $existing = $key !== '' && Db::val(
+                    'SELECT id FROM service_variants WHERE service_id = ? AND variant_key = ?',
+                    [$id, $key]
+                );
+
+                if ($existing) {
+                    Db::run(
+                        'UPDATE service_variants
+                            SET name = ?, note = ?, duration_min = ?, price = ?, sort_order = ?
+                          WHERE service_id = ? AND variant_key = ?',
+                        [$name, $note, $dur, $price, $order, $id, $key]
+                    );
+                } else {
+                    $key = self::freshVariantKey($id, $name);
+                    Db::run(
+                        'INSERT INTO service_variants
+                            (service_id, variant_key, name, note, duration_min, price, sort_order)
+                         VALUES (?, ?, ?, ?, ?, ?, ?)',
+                        [$id, $key, $name, $note, $dur, $price, $order]
+                    );
+                }
+
+                $keep[] = $key;
+                $order++;
+            }
+
+            /* اگر فهرست خالی برگشته باشد چیزی حذف نمی‌کنیم؛ پاک‌کردن همه‌ی
+               گزینه‌ها خدمت را بی‌قیمت می‌کند و به‌احتمال زیاد نتیجه‌ی یک
+               خطای سمت کلاینت است، نه قصد مدیر. */
+            if ($keep) {
+                $ph = implode(', ', array_fill(0, count($keep), '?'));
+                Db::run(
+                    'DELETE FROM service_variants
+                      WHERE service_id = ? AND variant_key NOT IN (' . $ph . ')',
+                    array_merge([$id], $keep)
+                );
+            }
+        }
+
+        /* «از … تومان» روی کارت‌ها باید همیشه با ارزان‌ترین گزینه
+           بخواند، وگرنه قیمت نمایش‌داده‌شده با واقعیت فرق می‌کند. */
+        $min = Db::val('SELECT MIN(price) FROM service_variants WHERE service_id = ?', [$id]);
+        if ($min !== null && !array_key_exists('price_from', $in)) {
+            Db::run('UPDATE services SET price_from = ? WHERE id = ?', [(int) $min, $id]);
+        }
+
+        /* ردیف تازه را همیشه برگردان — حتی اگر همین الان غیرفعال شده
+           باشد (bySlug فقط خدمت‌های فعال را برمی‌گرداند و پنل بعد از
+           غیرفعال‌ کردن نباید پاسخ خالی بگیرد). */
+        $variants = [];
+        foreach (Db::all(
+            'SELECT * FROM service_variants WHERE service_id = ? ORDER BY sort_order, id',
+            [$id]
+        ) as $v) {
+            $variants[] = [
+                'id'           => $v['variant_key'],
+                'name'         => $v['name'],
+                'note'         => $v['note'] ?? '',
+                'duration_min' => (int) $v['duration_min'],
+                'price'        => (int) $v['price'],
+            ];
+        }
+        return self::publicRow((Db::one('SELECT * FROM services WHERE id = ?', [$id]) ?: $s), $variants);
+    }
+}
