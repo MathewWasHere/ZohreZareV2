@@ -105,6 +105,31 @@ function db_state(?Throwable $e): array
 }
 
 /**
+ * از پیام «Access denied» سرور، جزئیاتش را بیرون می‌کشد.
+ *
+ * نمونه‌ی پیام MySQL:
+ *   Access denied for user 'zohrezar_zohre'@'localhost' (using password: YES)
+ *
+ * @return array{user:string,host:string,using_password:?bool}
+ */
+function parse_denied(string $msg): array
+{
+    $user = '';
+    $host = '';
+    $usingPassword = null;
+
+    if (preg_match("/for user '([^']*)'@'([^']*)'/", $msg, $m)) {
+        $user = $m[1];
+        $host = $m[2];
+    }
+    if (preg_match('/using password:\s*(YES|NO)/i', $msg, $m)) {
+        $usingPassword = strtoupper($m[1]) === 'YES';
+    }
+
+    return ['user' => $user, 'host' => $host, 'using_password' => $usingPassword];
+}
+
+/**
  * تلاش برای ساختن دیتابیس بدون انتخاب دیتابیس.
  *
  * روی اکثر هاست‌های اشتراکی کاربر MySQL اجازه‌ی CREATE DATABASE ندارد
@@ -142,11 +167,15 @@ function try_create_database(array $cfg): array
    را هم نگه می‌داریم تا کاربر بداند در ویزارد چه بنویسد. */
 $cfgDbName = '';
 $cfgDbUser = '';
+$cfgDbPassLen = 0;
 $dbNameRaw = '';
 $dbUserRaw = '';
 if ($configExists) {
     $cfgDbName = trim((string) Config::get('db.name'));
     $cfgDbUser = trim((string) Config::get('db.user'));
+    /* طول رمز را نگه می‌داریم تا بشود گفت «تنظیم شده ولی قبول نشد».
+       خود رمز هیچ‌جا نمایش داده نمی‌شود. */
+    $cfgDbPassLen = strlen((string) Config::get('db.pass'));
     $dbNameRaw = strpos($cfgDbName, '_') !== false
         ? substr($cfgDbName, (int) strpos($cfgDbName, '_') + 1) : $cfgDbName;
     $dbUserRaw = strpos($cfgDbUser, '_') !== false
@@ -478,6 +507,15 @@ $selfUrl = htmlspecialchars(
   .tbl{display:flex;flex-wrap:wrap;gap:8px;margin-top:8px}
   .chip{background:var(--ok-bg);color:var(--ok);border:1px solid var(--ok);
         border-radius:999px;padding:3px 12px;font-size:13px}
+  .cmp{width:100%;border-collapse:collapse;font-size:13px;margin-top:4px}
+  .cmp th{text-align:right;font-size:12px;color:var(--muted);font-weight:normal;
+          padding:4px 6px;border-bottom:1px solid var(--line)}
+  .cmp td{padding:6px;border-bottom:1px solid var(--line);vertical-align:top}
+  .cmp .ltr{direction:ltr;text-align:left;font-family:Menlo,Consolas,monospace;
+            font-size:12px;word-break:break-all}
+  .okmark{color:var(--ok);font-size:12px;white-space:nowrap}
+  .badmark{color:var(--danger);font-size:12px;white-space:nowrap}
+  .warnmark{color:var(--warn);font-size:12px}
 </style>
 </head>
 <body>
@@ -616,21 +654,120 @@ $selfUrl = htmlspecialchars(
 
   <?php elseif ($dbState === 'badcreds'): ?>
 
+    <?php $denied = parse_denied($dbStateMsg); ?>
+
     <div class="banner fail">نام کاربری یا رمز دیتابیس غلط است.</div>
-    <div class="card"><div class="row"><div>
-      <div class="t">پیام سرور</div>
-      <div class="sqlbox"><?= htmlspecialchars($dbStateMsg, ENT_QUOTES, 'UTF-8') ?></div>
-      <div class="d" style="margin-top:8px">
-        یعنی <code>user</code> یا <code>pass</code> در
-        <code>api/config.php</code> با آن چه در cPanel ساخته‌اید
-        یکی نیست.
-        <br><br>
-        <b>رمز را یادتان نیست؟</b> لازم نیست دیتابیس را از نو بسازید:
-        cPanel ← MySQL Databases ← پایین صفحه بخش Current Users ←
-        جلوی همان کاربر «Change Password» ← رمز تازه. بعد فقط همین رمز
-        تازه را در <code>api/config.php</code> بنویسید.
-      </div>
-    </div></div></div>
+
+    <div class="card">
+      <div class="row"><div>
+        <div class="t">۱. سرور چه چیزی دید</div>
+        <div class="sqlbox"><?= htmlspecialchars($dbStateMsg, ENT_QUOTES, 'UTF-8') ?></div>
+      </div></div>
+
+      <div class="row"><div>
+        <div class="t">۲. مقایسه‌ی آن با فایل api/config.php</div>
+        <div class="d">
+          <table class="cmp">
+            <tr>
+              <th></th><th>api/config.php</th><th>سرور MySQL</th><th></th>
+            </tr>
+            <tr>
+              <td>نام کاربر</td>
+              <td class="ltr"><?= htmlspecialchars($cfgDbUser !== '' ? $cfgDbUser : '(خالی)', ENT_QUOTES, 'UTF-8') ?></td>
+              <td class="ltr"><?= htmlspecialchars($denied['user'] !== '' ? $denied['user'] : '—', ENT_QUOTES, 'UTF-8') ?></td>
+              <td>
+                <?php if ($denied['user'] !== '' && $cfgDbUser === $denied['user']): ?>
+                  <span class="okmark">✓ یکی است</span>
+                <?php elseif ($cfgDbUser === ''): ?>
+                  <span class="badmark">✗ خالی است</span>
+                <?php else: ?>
+                  <span class="badmark">✗ فرق دارد</span>
+                <?php endif; ?>
+              </td>
+            </tr>
+            <tr>
+              <td>رمز عبور</td>
+              <td><?= $cfgDbPassLen > 0 ? ('تنظیم شده — ' . Jalali::fa((string) $cfgDbPassLen) . ' کاراکتر') : '<span class="badmark">خالی</span>' ?></td>
+              <td>
+                <?php if ($denied['using_password'] === null): ?>—
+                <?php elseif ($denied['using_password']): ?>یک رمز فرستاده شد
+                <?php else: ?><span class="badmark">هیچ رمزی فرستاده نشد</span><?php endif; ?>
+              </td>
+              <td>
+                <?php if ($cfgDbPassLen === 0): ?>
+                  <span class="badmark">✗ خالی است</span>
+                <?php elseif ($denied['using_password'] === false): ?>
+                  <span class="badmark">✗ PHP رمز را نفرستاد</span>
+                <?php else: ?>
+                  <span class="warnmark">؟ رمز خوانده شد ولی قبول نشد</span>
+                <?php endif; ?>
+              </td>
+            </tr>
+            <tr>
+              <td>نام دیتابیس</td>
+              <td class="ltr"><?= htmlspecialchars($cfgDbName !== '' ? $cfgDbName : '(خالی)', ENT_QUOTES, 'UTF-8') ?></td>
+              <td>—</td><td></td>
+            </tr>
+          </table>
+          <div class="d" style="margin-top:10px">
+            نام دیتابیس این‌جا مهم نیست: خطای ۱۰۴۵ یعنی سرور حتی به مرحله‌ی
+            انتخاب دیتابیس نرسید و <b>رمز یا نام کاربر</b> را قبول نکرد.
+          </div>
+        </div>
+      </div></div>
+    </div>
+
+    <h2>چطور درستش کنم</h2>
+    <div class="card">
+      <div class="row"><div>
+        <div class="t">الف) مطمئن شوید رمز همان است</div>
+        <div class="d">
+          رمز را یادتان نیست و جای دیگری نوشته نشده؟ لازم نیست دیتابیس را
+          از نو بسازید. یک رمز تازه بگذارید:
+          <br>
+          cPanel ← <b>MySQL Databases</b> ← پایین صفحه بخش
+          <b>Current Users</b> ← جلوی کاربر
+          <code><?= htmlspecialchars($cfgDbUser !== '' ? $cfgDbUser : '(نام کاربر)', ENT_QUOTES, 'UTF-8') ?></code>
+          دکمه‌ی <b>Change Password</b> ← رمز تازه ←
+          <b>Change Password</b>.
+        </div>
+      </div></div>
+
+      <div class="row"><div>
+        <div class="t">ب) رمز تازه را در api/config.php بنویسید</div>
+        <div class="d">
+          File Manager ← پوشه‌ی <code>api</code> ← روی <code>config.php</code>
+          راست‌کلیک ← <b>Edit</b> ← مقدار <code>pass</code> را عوض کنید.
+          <br><br>
+          <b>حتماً داخل ' تک‌کوتیشن باشد</b> و آخر خط چیزی اضافه نگذارید:
+          <div class="sqlbox">'pass' =&gt; 'رمز-تازه-اینجا',</div>
+        </div>
+      </div></div>
+
+      <div class="row"><div>
+        <div class="t">ج) این سه اشتباه رایج را نگاه کنید</div>
+        <div class="d">
+          ۱. <b>رمز با حرف $ شروع یا داخلش $ داشته باشد و شما آن را
+             داخل " دوکوتیشن گذاشته باشید</b> — PHP آن را متغیر حساب
+             می‌کند و رمز عوض می‌شود. راه‌حل: ' تک‌کوتیشن، یا رمزی
+             با فقط حرف و عدد بگذارید.
+          <br>
+          ۲. <b>رمز را با فاصله یا Enter اضافه کپی کرده باشید.</b>
+          <br>
+          ۳. <b>جای رمز، متن نمونه مانده باشد</b> — مثل همان سه‌نقطهٔ
+             راهنما. مقدار باید همان رمز واقعی باشد، نه «…».
+        </div>
+      </div></div>
+
+      <div class="row"><div>
+        <div class="t">د) همین صفحه را دوباره باز کنید</div>
+        <div class="d">
+          بعد از Save، همین آدرس را رفرش کنید. اگر رمز درست شده باشد،
+          پیام سبز «اتصال به دیتابیس برقرار است» و فهرست ۹ جدول می‌آید
+          و دکمه‌ی «ساخت جدول‌ها» ظاهر می‌شود.
+        </div>
+      </div></div>
+    </div>
 
   <?php elseif ($dbState === 'nopriv'): ?>
 
