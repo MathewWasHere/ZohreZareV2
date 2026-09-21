@@ -22,8 +22,31 @@ ini_set('display_errors', '0');
    ------------------------------------------------------------------ */
 $configPath = __DIR__ . '/config.php';
 if (is_file($configPath)) {
-    /** @var array<string,mixed> $config */
-    $config = require $configPath;
+    /* config.php خطای نگارشی داشته باشد؟ این‌جا هم باید پیام روشن
+       بدهیم، وگرنه صفحه سفید می‌ماند و معلوم نیست چرا.
+       شماره‌ی خط گفته می‌شود ولی متن خطای PHP نه — ممکن است تکه‌ای
+       از رمز عبور داخلش باشد. */
+    try {
+        /** @var array<string,mixed> $config */
+        $config = require $configPath;
+    } catch (Throwable $e) {
+        error_log('[zz] خطای نگارشی در api/config.php: ' . $e->getMessage()
+                  . ' @ خط ' . $e->getLine());
+        http_response_code(500);
+        exit(
+            '<!DOCTYPE html><html lang="fa" dir="rtl"><head><meta charset="utf-8">' .
+            '<title>خطای نگارشی در config.php</title></head>' .
+            '<body style="font-family:system-ui;direction:rtl;padding:2rem;line-height:2">' .
+            '<h2>⚠️ فایل api/config.php خطای نگارشی دارد</h2>' .
+            '<p>حدود <b>خط ' . (int) $e->getLine() . '</b>. ' .
+            '(خط گزارش‌شده گاهی چند خط بعد از اشتباه واقعی است؛ ' .
+            'کوتیشنِ بازمانده آخر فایل گزارش می‌شود.)</p>' .
+            '<p>رایج‌ترین علت‌ها: متنی که داخل کوتیشن ساده نگذاشته‌اید، ' .
+            'استفاده از کوتیشن فارسی (گیومه) جای کوتیشن ساده، یا ویرگول جاافتاده.</p>' .
+            '<p>پیام دقیق خطا در <code>error_log</code> هاست ثبت شد.</p>' .
+            '</body></html>'
+        );
+    }
     $basis  = (string) ($config['db']['pass'] ?? '');
     if ($basis !== '') {
         $guard = substr(hash('sha256', $basis . '|zz-selftest'), 0, 12);
