@@ -166,6 +166,49 @@ if (!is_file(__DIR__ . '/config.php')) {
     );
 }
 
+/* ================= ۳) فایل‌های سایت ================= */
+
+/* اگر موقع آپلود، بخشی از فایل‌ها جا بمانند، سایت نیمه‌کاره کار می‌کند
+   و پیدا کردنش سخت است (مثلاً تقویم رزرو بالا نمی‌آید). این بخش فهرست
+   فایل‌های لازم را چک می‌کند و می‌گوید کدام‌ها روی هاست نیستند. */
+
+$siteRoot  = dirname(__DIR__);
+$expected  = [
+    'index.html' , 'booking.html', 'auth.html', 'account.html',
+    'services.html', 'service.html', 'about.html', '404.html',
+    'manifest.json', 'robots.txt', 'sitemap.xml', 'service-worker.js',
+    'assets/css/base.css', 'assets/css/components.css',
+    'assets/css/pages.css', 'assets/css/fonts.css',
+    'assets/js/core/config.js', 'assets/js/core/store.js',
+    'assets/js/core/utils.js', 'assets/js/core/api.js',
+    'assets/js/data/services.js', 'assets/js/data/auth.js',
+    'assets/js/data/appointments.js', 'assets/js/data/backend-bridge.js',
+    'assets/js/ui/icons.js', 'assets/js/ui/toast.js',
+    'assets/js/ui/dialog.js', 'assets/js/ui/shell.js',
+    'assets/js/pages/home.js', 'assets/js/pages/services.js',
+    'assets/js/pages/service-detail.js', 'assets/js/pages/booking.js',
+    'assets/js/pages/auth.js', 'assets/js/pages/account.js',
+    'assets/js/pages/admin.js',
+    'panel/index.html', 'panel/admin/index.html',
+];
+
+$missing = [];
+foreach ($expected as $rel) {
+    if (!is_file($siteRoot . '/' . $rel)) {
+        $missing[] = $rel;
+    }
+}
+
+check(
+    'فایل‌های سایت',
+    $missing ? 'fail' : 'ok',
+    $missing
+        ? count($missing) . ' فایل روی هاست نیست: ' . implode('، ', array_slice($missing, 0, 8))
+          . (count($missing) > 8 ? ' و ' . (count($missing) - 8) . ' فایل دیگر' : '')
+          . ' — بسته‌ی کامل را دوباره آپلود و از حالت زیپ خارج کنید.'
+        : count($expected) . ' فایل لازم سر جایشان هستند'
+);
+
 /* ================= ۳) دسترسی فایل‌ها ================= */
 
 $cfgUrl = (Http::isHttps() ? 'https://' : 'http://')
