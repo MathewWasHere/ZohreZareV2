@@ -167,10 +167,12 @@ function try_create_database(array $cfg): array
    را هم نگه می‌داریم تا کاربر بداند در ویزارد چه بنویسد. */
 $cfgDbName = '';
 $cfgDbUser = '';
+$cfgHostValue = '';
 $cfgDbPassLen = 0;
 $dbNameRaw = '';
 $dbUserRaw = '';
 if ($configExists) {
+    $cfgHostValue = trim((string) Config::get('db.host'));
     $cfgDbName = trim((string) Config::get('db.name'));
     $cfgDbUser = trim((string) Config::get('db.user'));
     /* طول رمز را نگه می‌داریم تا بشود گفت «تنظیم شده ولی قبول نشد».
@@ -456,6 +458,114 @@ $selfUrl = htmlspecialchars(
     ENT_QUOTES,
     'UTF-8'
 );
+/* ------------------------------------------------------------------
+   تعمیر رمز دیتابیس — یک فیلد، بدون کلید
+
+   چرا بدون کلید؟ چون خودِ کلید از روی رمزِ داخل config.php ساخته
+   می‌شود؛ وقتی همان رمز غلط باشد، کاربر هیچ‌وقت کلید درست را ندارد.
+   پس این فرم فقط وقتی دیده می‌شود که اتصال دیتابیس برقرار نباشد، و
+   فایل را تنها زمانی می‌نویسد که رمزِ واردشده واقعاً وصل شود.
+   ------------------------------------------------------------------ */
+
+/**
+ * رمز را در config.php می‌گذارد — ولی اول اتصال را امتحان می‌کند.
+ *
+ * @return array{0:bool,1:string,2:string}  [موفق؟، پیام خطا، رمزی که کار کرد]
+ */
+function repair_db_config(string $pass, bool $useLocalhost): array
+{
+    $file = __DIR__ . '/config.php';
+
+    try {
+        $data = include $file;
+    } catch (Throwable $e) {
+        return [false, 'api/config.php خوانده نشد: ' . $e->getMessage(), ''];
+    }
+
+    if (!is_array($data) || !isset($data['db']) || !is_array($data['db'])) {
+        return [false, 'ساختار api/config.php درست نیست.', ''];
+    }
+
+    /* رمزهای کاندید: همان‌طور که تایپ شده، و نسخه‌ی بدون فاصله‌ی
+       ابتدا/انتها (کپی‌کردن معمولاً فاصله‌ی اضافه می‌آورد). */
+    $candidates = [];
+    foreach ([$pass, trim($pass)] as $c) {
+        if ($c !== '' && !in_array($c, $candidates, true)) {
+            $candidates[] = $c;
+        }
+    }
+    if ($candidates === []) {
+        return [false, 'رمز را وارد کنید.', ''];
+    }
+
+    $host = $useLocalhost
+        ? 'localhost'
+        : (trim((string) ($data['db']['host'] ?? '')) ?: 'localhost');
+    $name = (string) ($data['db']['name'] ?? '');
+    $user = (string) ($data['db']['user'] ?? '');
+    $last = '';
+
+    foreach ($candidates as $tryPass) {
+        try {
+            $dsn = 'mysql:host=' . $host . ';dbname=' . $name . ';charset=utf8mb4';
+            $pdo = new PDO($dsn, $user, $tryPass, [
+                PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION,
+                PDO::ATTR_TIMEOUT => 8,
+            ]);
+            $pdo->query('SELECT 1');
+
+            /* اتصال برقرار شد — حالا فایل را بنویس */
+            $data['db']['host'] = $host;
+            $data['db']['pass'] = $tryPass;
+
+            $php = "<?php\n"
+                 . "/* فایل تنظیمات سایت — با صفحه‌ی نصب (api/install.php) نوشته شد.\n"
+                 . "   همه‌ی کلیدها دست‌نخورده مانده‌اند؛ فقط میزبان/رمز دیتابیس اصلاح شده است. */\n"
+                 . "return " . var_export($data, true) . ";\n";
+
+            $tmp = $file . '.new';
+            if (@file_put_contents($tmp, $php) === false || !@rename($tmp, $file)) {
+                @unlink($tmp);
+                return [
+                    false,
+                    'اتصال برقرار شد ولی نوشتن api/config.php ممکن نشد (دسترسی فایل). '
+                    . 'رمز را در همین فایل دستی بگذارید.',
+                    '',
+                ];
+            }
+
+            return [true, '', $tryPass];
+        } catch (Throwable $e) {
+            $last = $e->getMessage();
+        }
+    }
+
+    return [
+        false,
+        'با این رمز هم وصل نشد: ' . $last . ' — ' . Db::diagnoseConnectError($last),
+        '',
+    ];
+}
+
+$fixOk  = false;
+$fixKey = '';
+$fixErr = '';
+
+if ($configExists && isset($_POST['fix_pass'])) {
+    if ($dbState === 'ok') {
+        $fixErr = 'اتصال دیتابیس از قبل برقرار است؛ نیازی به تغییر رمز نیست.';
+    } else {
+        [$fixOk, $fixErr, $workedPass] = repair_db_config(
+            (string) $_POST['fix_pass'],
+            isset($_POST['fix_localhost'])
+        );
+        if ($fixOk) {
+            $fixKey = substr(hash('sha256', $workedPass . '|zz-install'), 0, 12);
+            $fixErr = '';
+        }
+    }
+}
+
 ?>
 <!DOCTYPE html>
 <html lang="fa" dir="rtl">
@@ -522,6 +632,78 @@ $selfUrl = htmlspecialchars(
 <div class="wrap">
   <h1>ساخت جدول‌های دیتابیس</h1>
   <p class="sub">این صفحه فایل schema.sql را مستقیم روی همان دیتابیسی اجرا می‌کند که در api/config.php نوشته‌اید.</p>
+
+<?php if ($fixKey !== ''): ?>
+
+  <div class="banner ok">✅ رمز دیتابیس ذخیره شد و اتصال برقرار است.</div>
+  <div class="card"><div class="row"><div>
+    <div class="t">کار تمام است</div>
+    <div class="d">
+      فایل <code>api/config.php</code> به‌روز شد. حالا جدول‌ها را بسازید
+      (اگر قبلاً ساخته شده‌اند، این مرحله فقط ساختار را دوباره بررسی می‌کند و چیزی
+      خراب نمی‌شود):
+      <div class="sqlbox"><?= $selfUrl ?>?key=<?= htmlspecialchars($fixKey, ENT_QUOTES, 'UTF-8') ?>&amp;run=1</div>
+      <div style="margin-top:8px">
+        گزارش کامل نصب:
+        <div class="sqlbox"><?= $selfUrl ?>?key=<?= htmlspecialchars($fixKey, ENT_QUOTES, 'UTF-8') ?></div>
+      </div>
+      <div style="margin-top:8px">
+        صفحه‌ی وضعیت سایت (کلید تازه): 
+        <div class="sqlbox">api/selftest.php?key=<?= htmlspecialchars(substr(hash('sha256', $workedPass . '|zz-selftest'), 0, 12), ENT_QUOTES, 'UTF-8') ?></div>
+      </div>
+    </div>
+  </div></div></div>
+
+<?php endif; ?>
+
+<?php if (!$allowed && $fixKey === '' && $configExists && $dbState !== 'ok'): ?>
+
+  <div class="banner fail">اتصال به دیتابیس برقرار نشد.</div>
+  <div class="card"><div class="row"><div>
+    <div class="t">پیام سرور</div>
+    <div class="sqlbox"><?= htmlspecialchars($dbStateMsg, ENT_QUOTES, 'UTF-8') ?></div>
+    <div class="d" style="margin-top:8px">
+      <?= htmlspecialchars(Db::diagnoseConnectError($dbStateMsg), ENT_QUOTES, 'UTF-8') ?>
+    </div>
+    <div class="d" style="margin-top:8px">
+      مقادیر فعلی <code>api/config.php</code>:
+      میزبان <code><?= htmlspecialchars($cfgHostValue, ENT_QUOTES, 'UTF-8') ?></code>،
+      دیتابیس <code><?= htmlspecialchars($cfgDbName, ENT_QUOTES, 'UTF-8') ?></code>،
+      کاربر <code><?= htmlspecialchars($cfgDbUser, ENT_QUOTES, 'UTF-8') ?></code>،
+      طول رمز <code><?= (int) $cfgDbPassLen ?></code>
+    </div>
+  </div></div>
+
+  <div class="row"><div>
+    <div class="t">درست‌کردن رمز — همین‌جا</div>
+    <div class="d">
+      رمز را از cPanel بگیرید: <strong>cPanel → MySQL Databases</strong> →
+      جلوی کاربر دیتابیس <strong>Change Password</strong> را بزنید (اگر رمز
+      را نمی‌دانید، عوضش کنید) و همان را اینجا بگذارید. این صفحه اول
+      اتصال را آزمایش می‌کند و فقط در صورت موفقیت فایل را می‌نویسد؛
+      تنظیمات پیامک و بقیه‌ی کلیدها دست‌نخورده می‌مانند.
+    </div>
+    <form method="post" action="<?= $selfUrl ?>" style="margin-top:10px">
+      <input type="password" name="fix_pass" required dir="ltr"
+             placeholder="رمز دیتابیس"
+             style="width:100%;padding:10px;border:1px solid rgba(21,16,14,.25);border-radius:8px;font:14px Menlo,Consolas,monospace">
+      <label style="display:block;margin:10px 0 4px">
+        <input type="checkbox" name="fix_localhost" value="1" checked>
+        استفاده از <code>localhost</code> به‌جای
+        <code><?= htmlspecialchars($cfgHostValue, ENT_QUOTES, 'UTF-8') ?></code>
+        <span class="d">(روی cPanel تقریباً همیشه درست است)</span>
+      </label>
+      <button type="submit" class="btn" style="border:0;cursor:pointer;font:inherit">
+        ذخیره و آزمایش اتصال
+      </button>
+    </form>
+    <?php if ($fixErr !== ''): ?>
+      <div class="banner fail" style="margin:12px 0 0"><?= htmlspecialchars($fixErr, ENT_QUOTES, 'UTF-8') ?></div>
+    <?php endif; ?>
+  </div></div>
+  </div>
+
+<?php endif; ?>
 
 <?php if (!$configExists): ?>
 
