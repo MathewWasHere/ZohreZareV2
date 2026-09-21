@@ -1,214 +1,32 @@
 /*
    ==========================================================================
-   schema.sql — ساختار پایگاه داده‌ی سایت زهره زارع
-   
+   migration-new-services.sql — به‌روزرسانی خدمات روی دیتابیس آماده
+   ==========================================================================
+
+   این فایل را فقط وقتی اجرا کنید که سایت از قبل نصب شده و دیتابیس
+   ساخته شده است (کاربران و نوبت‌های ثبت‌شده دارید).
+
+   چه کاری می‌کند؟
+     ۱. سه ستون تازه‌ی محتوای خدمت را (اگر نباشند) اضافه می‌کند.
+     ۲. خدمات قبلی را از سایت برمی‌دارد؛ خدمتی که نوبت ثبت‌شده دارد
+        پاک نمی‌شود (تاریخچه‌ی نوبت‌ها سالم می‌ماند) بلکه غیرفعال می‌شود.
+     ۳. خدمات تازه و گزینه‌هایشان را می‌سازد.
+
    روش اجرا:
      cPanel → phpMyAdmin → دیتابیس را انتخاب کنید → زبانه‌ی Import
      → همین فایل را انتخاب کنید → Go
-   
-   این فایل را می‌شود چند بار اجرا کرد؛ جدول‌های موجود دست‌نخورده
-   می‌مانند و خدمات دوباره‌نویسی می‌شوند.
-   
-   تولید خودکار با tools/make-schema.js — دستی ویرایشش نکنید.
+   یا: cPanel → File Manager → آدرس این فایل را در مرورگر باز کنید
+       (نصب‌کننده‌ی api/install.php فقط schema.sql را می‌خواند).
+
+   اجرای دوباره‌ی این فایل مشکلی ندارد.
+
+   اگر سایت را تازه نصب می‌کنید، به این فایل نیازی نیست؛ فقط
+   api/schema.sql را اجرا کنید.
+
+   برگرفته از assets/js/data/services.js — دستی ویرایشش نکنید.
    ==========================================================================
 */
 
-SET NAMES utf8mb4;
-
-/*
-   ---------------- کاربران ----------------
-   تاریخ تولد شمسی ذخیره می‌شود (نه میلادی) چون کاربر همان را
-   وارد می‌کند و تبدیل رفت‌وبرگشتی فقط جای خطا می‌سازد.
-*/
-CREATE TABLE IF NOT EXISTS users (
-  id            VARCHAR(32)  NOT NULL,
-  phone         CHAR(11)     NOT NULL,
-  name          VARCHAR(80)  NOT NULL DEFAULT '',
-  birth_y       SMALLINT     NULL,
-  birth_m       TINYINT      NULL,
-  birth_d       TINYINT      NULL,
-  role          ENUM('user','admin') NOT NULL DEFAULT 'user',
-  created_at    DATETIME     NOT NULL,
-  last_login_at DATETIME     NULL,
-  PRIMARY KEY (id),
-  UNIQUE KEY uk_users_phone (phone),
-  KEY idx_users_birthday (birth_m, birth_d)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
-
-/*
-   ---------------- نشست‌های ورود ----------------
-   توکن خام هرگز ذخیره نمی‌شود؛ فقط هش SHA-256 آن. اگر کسی به
-   دیتابیس دسترسی پیدا کند نمی‌تواند با آن وارد حساب کسی شود.
-*/
-CREATE TABLE IF NOT EXISTS sessions (
-  token      CHAR(64)     NOT NULL,
-  user_id    VARCHAR(32)  NOT NULL,
-  created_at DATETIME     NOT NULL,
-  expires_at DATETIME     NOT NULL,
-  last_seen  DATETIME     NULL,
-  ip         VARCHAR(45)  NULL,
-  user_agent VARCHAR(200) NULL,
-  PRIMARY KEY (token),
-  KEY idx_sessions_user (user_id),
-  KEY idx_sessions_exp (expires_at)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
-
-/*
-   ---------------- کدهای یک‌بارمصرف ----------------
-   code_hash هش کد است، نه خود کد.
-*/
-CREATE TABLE IF NOT EXISTS otp_codes (
-  id         BIGINT UNSIGNED NOT NULL AUTO_INCREMENT,
-  phone      CHAR(11)     NOT NULL,
-  code_hash  CHAR(64)     NOT NULL,
-  attempts   TINYINT      NOT NULL DEFAULT 0,
-  expires_at DATETIME     NOT NULL,
-  used_at    DATETIME     NULL,
-  ip         VARCHAR(45)  NULL,
-  created_at DATETIME     NOT NULL,
-  PRIMARY KEY (id),
-  KEY idx_otp_phone (phone, created_at),
-  KEY idx_otp_ip (ip, created_at)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
-
-/*
-   ---------------- خدمات ----------------
-   ستون‌های JSON فهرست‌های متنی صفحه‌ی خدمت‌اند (پاراگراف‌ها،
-   مراقبت‌ها، پرسش‌ها). چون هیچ‌وقت جداگانه جست‌وجو نمی‌شوند،
-   جدول جدا برایشان فقط پیچیدگی اضافه می‌کرد.
-*/
-CREATE TABLE IF NOT EXISTS services (
-  id            VARCHAR(40)  NOT NULL,
-  slug          VARCHAR(60)  NOT NULL,
-  title         VARCHAR(120) NOT NULL,
-  short_text    VARCHAR(300) NOT NULL DEFAULT '',
-  image         VARCHAR(200) NOT NULL DEFAULT '',
-  icon          VARCHAR(40)  NOT NULL DEFAULT '',
-  ig_link       VARCHAR(200) NULL,
-  duration_min  SMALLINT     NOT NULL DEFAULT 60,
-  price_from    INT          NOT NULL DEFAULT 0,
-  description   MEDIUMTEXT   NULL,
-  includes_json MEDIUMTEXT   NULL,
-  benefits      MEDIUMTEXT   NULL,
-  notes         MEDIUMTEXT   NULL,
-  pre_care      MEDIUMTEXT   NULL,
-  aftercare     MEDIUMTEXT   NULL,
-  good_for      MEDIUMTEXT   NULL,
-  faq           MEDIUMTEXT   NULL,
-  sort_order    SMALLINT     NOT NULL DEFAULT 0,
-  active        TINYINT(1)   NOT NULL DEFAULT 1,
-  PRIMARY KEY (id),
-  UNIQUE KEY uk_services_slug (slug)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
-
-CREATE TABLE IF NOT EXISTS service_variants (
-  id           INT UNSIGNED NOT NULL AUTO_INCREMENT,
-  service_id   VARCHAR(40)  NOT NULL,
-  variant_key  VARCHAR(40)  NOT NULL,
-  name         VARCHAR(120) NOT NULL,
-  note         VARCHAR(300) NOT NULL DEFAULT '',
-  duration_min SMALLINT     NOT NULL DEFAULT 60,
-  price        INT          NOT NULL DEFAULT 0,
-  sort_order   SMALLINT     NOT NULL DEFAULT 0,
-  PRIMARY KEY (id),
-  UNIQUE KEY uk_variant (service_id, variant_key)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
-
-/*
-   ---------------- نوبت‌ها ----------------
-   چرخه‌ی وضعیت (بدون درگاه پرداخت):
-   
-     مشتری ساعت را می‌گیرد
-            ↓
-     pending ──(مدیر تماس می‌گیرد و تأیید می‌کند)──→ confirmed ──→ done
-        │                                               │
-        │                                               └──→ no_show
-        ├──(مدیر رد می‌کند)──→ rejected
-        └──(مشتری منصرف می‌شود)──→ cancelled
-   
-   بیعانه یک رکورد ساده روی همین ردیف است، نه تراکنش بانکی. مدیر
-   حین تماس مبلغ را می‌گیرد و ثبتش می‌کند. هر وقت درگاه پرداخت
-   اضافه شد، فقط یک مقدار جدید به deposit_method اضافه می‌شود.
-*/
-CREATE TABLE IF NOT EXISTS appointments (
-  id              VARCHAR(32)  NOT NULL,
-  user_id         VARCHAR(32)  NOT NULL,
-  service_id      VARCHAR(40)  NOT NULL,
-  variant_key     VARCHAR(40)  NOT NULL,
-  variant_name    VARCHAR(120) NOT NULL,
-  `date`          DATE         NOT NULL,
-  `time`          CHAR(5)      NOT NULL,
-  duration_min    SMALLINT     NOT NULL DEFAULT 60,
-  price           INT          NOT NULL DEFAULT 0,
-  status          ENUM('pending','confirmed','rejected','cancelled','done','no_show')
-                  NOT NULL DEFAULT 'pending',
-  note            VARCHAR(400) NOT NULL DEFAULT '',
-  deposit_amount  INT          NULL,
-  deposit_method  VARCHAR(20)  NULL,
-  deposit_ref     VARCHAR(40)  NULL,
-  deposit_note    VARCHAR(200) NULL,
-  deposit_paid_at DATETIME     NULL,
-  reject_reason   VARCHAR(200) NULL,
-  decided_at      DATETIME     NULL,
-  decided_by      VARCHAR(20)  NULL,
-  cancelled_at    DATETIME     NULL,
-  cancelled_by    VARCHAR(20)  NULL,
-  created_at      DATETIME     NOT NULL,
-  PRIMARY KEY (id),
-  KEY idx_appt_user (user_id),
-  KEY idx_appt_day (`date`, `time`),
-  KEY idx_appt_status (status, `date`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
-
-/* ---------------- بستن روز و ساعت توسط مدیر ---------------- */
-CREATE TABLE IF NOT EXISTS closed_days (
-  `date`     DATE         NOT NULL,
-  reason     VARCHAR(120) NOT NULL DEFAULT '',
-  created_at DATETIME     NOT NULL,
-  PRIMARY KEY (`date`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
-
-CREATE TABLE IF NOT EXISTS blocked_slots (
-  `date`     DATE         NOT NULL,
-  `time`     CHAR(5)      NOT NULL,
-  reason     VARCHAR(120) NOT NULL DEFAULT '',
-  created_at DATETIME     NOT NULL,
-  PRIMARY KEY (`date`, `time`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
-
-/*
-   ---------------- گزارش پیامک ----------------
-   متن کد تأیید عمداً ذخیره نمی‌شود.
-*/
-CREATE TABLE IF NOT EXISTS sms_log (
-  id          BIGINT UNSIGNED NOT NULL AUTO_INCREMENT,
-  phone       CHAR(11)     NOT NULL,
-  tag         VARCHAR(20)  NOT NULL DEFAULT '',
-  body        VARCHAR(400) NULL,
-  result_code INT          NOT NULL DEFAULT 0,
-  message     VARCHAR(200) NULL,
-  batch_id    BIGINT       NULL,
-  created_at  DATETIME     NOT NULL,
-  PRIMARY KEY (id),
-  KEY idx_sms_phone (phone, created_at)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
-
-/*
-   ==========================================================================
-   کاتالوگ خدمات
-   برگرفته از assets/js/data/services.js تا نسخه‌ی سرور و نسخه‌ی
-   استاتیک سایت هرگز از هم جدا نیفتند.
-   اگر نسخه‌ی استاتیک را عوض کردید، همین بخش را هم به‌روز کنید.
-   ==========================================================================
-*/
-
-/*
-   ---------------- ستون‌های تازه‌ی محتوای خدمت ----------------
-   «مزایا»، «نکات مهم قبل از رزرو» و «مراقبت‌های قبل از انجام» بعداً
-   به خدمات اضافه شده‌اند. روی دیتابیس‌های قدیمی این ستون‌ها وجود
-   ندارند، پس اول با یک دستور شرطی ساخته می‌شوند (اجرای دوباره‌ی
-   این فایل خطا نمی‌دهد).
-*/
 /* مزایا */
 SET @zz_col_benefits = IF((SELECT COUNT(*) FROM information_schema.columns
        WHERE table_schema = DATABASE() AND table_name = 'services'
@@ -240,12 +58,6 @@ EXECUTE zz_add_pre_care;
 DEALLOCATE PREPARE zz_add_pre_care;
 
 
-/*
-   ---------------- برداشتن خدمات قبلی از سایت ----------------
-   نوبت‌های گذشته‌ی مشتری‌ها به نام خدمتشان در گزارش‌ها می‌آید، پس
-   خدمتی که نوبت دارد پاک نمی‌شود؛ فقط غیرفعال می‌شود تا از سایت
-   برداشته شود و تاریخچه‌ی نوبت‌ها سالم بماند.
-*/
 /* برداشتن خدمات قبلی از سایت؛ خدمتی که نوبت ثبت‌شده دارد پاک نمی‌شود */
 DELETE sv FROM service_variants sv
  WHERE sv.service_id IN ('svc_lash_ext', 'svc_permanent_liner', 'svc_microblading', 'svc_lip_blush', 'svc_lift_lam')
@@ -255,6 +67,7 @@ DELETE s FROM services s
    AND NOT EXISTS (SELECT 1 FROM appointments a WHERE a.service_id = s.id);
 UPDATE services SET active = 0 WHERE id IN ('svc_lash_ext', 'svc_permanent_liner', 'svc_microblading', 'svc_lip_blush', 'svc_lift_lam');
 
+/* ---------------- خدمات تازه ---------------- */
 /* بن مژه */
 INSERT INTO services
   (id, slug, title, short_text, image, icon, ig_link, duration_min,
@@ -615,25 +428,8 @@ ON DUPLICATE KEY UPDATE
 
 
 /*
-   ==========================================================================
-   اختیاری — قفل ضدِ رزرو هم‌زمان
-   
-   کد PHP قبل از ثبت بررسی می‌کند که ساعت آزاد باشد، ولی اگر دو
-   نفر در همان کسری از ثانیه ثبت کنند، هر دو بررسی موفق می‌شود و
-   یک ساعت دو بار رزرو می‌شود. ستون زیر همان ساعت را برای
-   نوبت‌های فعال یکتا می‌کند، پس دیتابیس دومی را رد می‌کند و PHP
-   پیام «این ساعت همین الان گرفته شد» نشان می‌دهد.
-   
-   به MySQL 5.7+ یا MariaDB 10.2+ نیاز دارد. اگر خطا داد، سایت
-   بدون این هم کار می‌کند — فقط این محافظت آخر را ندارد.
-   دستور زیر را جداگانه در phpMyAdmin اجرا کنید:
-   
-     ALTER TABLE appointments
-       ADD COLUMN slot_lock VARCHAR(20)
-         GENERATED ALWAYS AS (
-           CASE WHEN status IN ('pending','confirmed')
-                THEN CONCAT(`date`, ' ', `time`) ELSE NULL END
-         ) STORED,
-       ADD UNIQUE KEY uk_appt_slot (slot_lock);
-   ==========================================================================
+   برای بررسی نتیجه:
+     SELECT id, title, active FROM services ORDER BY sort_order;
+     SELECT service_id, variant_key, price FROM service_variants
+      ORDER BY service_id, sort_order;
 */

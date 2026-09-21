@@ -88,6 +88,11 @@ final class Catalog
             'variants'     => $variants,
             'description'  => self::json($s['description']),
             'includes'     => self::json($s['includes_json']),
+            /* سه فهرست زیر بعداً به خدمات اضافه شده‌اند؛ اگر دیتابیس هنوز
+               به‌روزرسانی نشده باشد، جای خالی‌شان آرایه‌ی خالی می‌شود. */
+            'benefits'     => self::json($s['benefits'] ?? null),
+            'notes'        => self::json($s['notes'] ?? null),
+            'pre_care'     => self::json($s['pre_care'] ?? null),
             'aftercare'    => self::json($s['aftercare']),
             'good_for'     => self::json($s['good_for']),
             'faq'          => self::json($s['faq']),
@@ -142,6 +147,9 @@ final class Catalog
         $listFields = [
             'description' => 'description',
             'includes'    => 'includes_json',
+            'benefits'    => 'benefits',
+            'notes'       => 'notes',
+            'pre_care'    => 'pre_care',
             'aftercare'   => 'aftercare',
             'good_for'    => 'good_for',
             'faq'         => 'faq',
