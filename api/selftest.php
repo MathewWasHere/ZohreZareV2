@@ -74,6 +74,8 @@ require __DIR__ . '/lib/config.php';
 require __DIR__ . '/lib/jalali.php';
 require __DIR__ . '/lib/db.php';
 require __DIR__ . '/lib/sms.php';
+require __DIR__ . '/lib/catalog.php';
+require __DIR__ . '/lib/booking.php';
 
 /* این صفحه HTML چاپ می‌کند، پس خطای اتصال باید استثنا شود نه
    پاسخ JSON — وگرنه وسط صفحه یک تکه JSON ظاهر می‌شود. */
@@ -234,6 +236,55 @@ if ($dbOk) {
               Jalali::fa((int) Db::val('SELECT COUNT(*) FROM users')) . ' نفر');
         check('نوبت‌های ثبت‌شده', 'ok',
               Jalali::fa((int) Db::val('SELECT COUNT(*) FROM appointments')) . ' نوبت');
+
+        /* ---- تقویم و کاتالوگ خدمت‌ها ----
+           اگر این دو درست نباشند، صفحه‌ی رزرو بالا نمی‌آید:
+           بدون روز، دکمه‌ی «ادامه: انتخاب زمان» کاری نمی‌کند و
+           بدون «گزینه» (variant) نمی‌شود خدمتی را انتخاب کرد. */
+        try {
+            $days = Booking::days(0);
+            $open = 0;
+            foreach ($days as $d) {
+                if (!empty($d['has_open_slot'])) {
+                    $open++;
+                }
+            }
+            check(
+                'روزهای تقویم',
+                $days && $open ? 'ok' : 'warn',
+                count($days) . ' روز ساخته شد'
+                . ($open ? ' — ' . $open . ' روز ظرفیت خالی دارد' : '')
+                . (!$days ? ' — هیچ روزی برنگشت! مقدار booking.days_ahead را بررسی کنید' : '')
+            );
+        } catch (Throwable $e) {
+            check('روزهای تقویم', 'fail',
+                  'تقویم ساخته نشد: ' . $e->getMessage()
+                  . ' — همین خطا باعث می‌شود دکمه‌ی «ادامه: انتخاب زمان» کاری نکند.');
+        }
+
+        try {
+            $svc   = Catalog::all(true);
+            $total = 0;
+            $empty = [];
+            foreach ($svc as $one) {
+                $n = count($one['variants'] ?? []);
+                $total += $n;
+                if ($n === 0) {
+                    $empty[] = (string) $one['title'];
+                }
+            }
+            check(
+                'خدمت‌ها و گزینه‌ها',
+                ($svc && $total) ? ($empty ? 'warn' : 'ok') : 'fail',
+                count($svc) . ' خدمت، ' . $total . ' گزینه'
+                . ($empty
+                    ? ' — این خدمت‌ها هیچ گزینه‌ای ندارند و قابل انتخاب نیستند: '
+                      . implode('، ', $empty) . '. در install.php دکمه‌ی «ساخت جدول‌ها» را بزنید.'
+                    : '')
+            );
+        } catch (Throwable $e) {
+            check('خدمت‌ها و گزینه‌ها', 'fail', 'کاتالوگ خوانده نشد: ' . $e->getMessage());
+        }
     }
 }
 
