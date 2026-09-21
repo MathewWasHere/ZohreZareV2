@@ -53,6 +53,144 @@ $doRun   = $allowed && isset($_GET['run']);
 $doLock  = $allowed && isset($_GET['lock']);
 
 /* ------------------------------------------------------------------
+   وضعیت دیتابیس — ساخته شده یا نه؟
+
+   PHP روی هاست اشتراکی معمولاً اجازه‌ی ساختن دیتابیس را ندارد؛ این
+   کار در cPanel فقط به کاربری که وارد پنل شده داده می‌شود. ولی بعضی
+   هاست‌ها این اجازه را می‌دهند. پس اول وضعیت را دقیق تشخیص می‌دهیم
+   تا پیام درست بدهیم، و اگر هاست اجازه داد، خودمان می‌سازیمش.
+   ------------------------------------------------------------------ */
+
+/**
+ * کد خطای MySQL را به یک وضعیت خوانا تبدیل می‌کند.
+ *
+ * @return array{0:string,1:int}  [وضعیت، کد خطا]
+ *   ok      → اتصال برقرار است
+ *   missing → دیتابیس وجود ندارد (۱۰۴۹)
+ *   badcreds→ نام کاربری یا رمز غلط است (۱۰۴۵)
+ *   nopriv  → کاربر به این دیتابیس دسترسی ندارد (۱۰۴۴ / ۱۱۴۲)
+ *   down    → سرور دیتابیس جواب نمی‌دهد
+ */
+function db_state(?Throwable $e): array
+{
+    if ($e === null) {
+        return ['ok', 0];
+    }
+
+    $code = 0;
+    if ($e instanceof PDOException && isset($e->errorInfo[1])) {
+        $code = (int) $e->errorInfo[1];
+    }
+
+    if ($code === 0) {
+        $msg = $e->getMessage();
+        if (stripos($msg, 'Unknown database') !== false) {
+            $code = 1049;
+        } elseif (stripos($msg, 'Access denied for user') !== false) {
+            $code = 1045;
+        }
+    }
+
+    if ($code === 1049) {
+        return ['missing', $code];
+    }
+    if ($code === 1045) {
+        return ['badcreds', $code];
+    }
+    if ($code === 1044 || $code === 1142) {
+        return ['nopriv', $code];
+    }
+
+    return ['down', $code];
+}
+
+/**
+ * تلاش برای ساختن دیتابیس بدون انتخاب دیتابیس.
+ *
+ * روی اکثر هاست‌های اشتراکی کاربر MySQL اجازه‌ی CREATE DATABASE ندارد
+ * و این تابع خطا برمی‌گرداند — که اشکالی ندارد، چون صفحه همان‌جا
+ * راهنمای سه‌کلیکی cPanel را نشان می‌دهد.
+ *
+ * @return array{0:bool,1:string}  [موفق؟، پیام خطا]
+ */
+function try_create_database(array $cfg): array
+{
+    $name = trim((string) ($cfg['name'] ?? ''));
+    if ($name === '') {
+        return [false, 'نام دیتابیس در api/config.php خالی است.'];
+    }
+
+    try {
+        $dsn = 'mysql:host=' . $cfg['host'] . ';charset=' . ($cfg['charset'] ?? 'utf8mb4');
+        $pdo = new PDO($dsn, (string) $cfg['user'], (string) $cfg['pass'], [
+            PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION,
+        ]);
+        $safe = str_replace('`', '``', $name);
+        $pdo->exec(
+            'CREATE DATABASE IF NOT EXISTS `' . $safe . '`'
+            . ' CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci'
+        );
+
+        return [true, ''];
+    } catch (Throwable $e) {
+        return [false, $e->getMessage()];
+    }
+}
+
+/* اسم‌های داخل config — برای نمایش و برای راهنمای cPanel.
+   cPanel پیشوند حساب را خودش اضافه می‌کند، پس نسخه‌ی بدون پیشوند
+   را هم نگه می‌داریم تا کاربر بداند در ویزارد چه بنویسد. */
+$cfgDbName = '';
+$cfgDbUser = '';
+$dbNameRaw = '';
+$dbUserRaw = '';
+if ($configExists) {
+    $cfgDbName = trim((string) Config::get('db.name'));
+    $cfgDbUser = trim((string) Config::get('db.user'));
+    $dbNameRaw = strpos($cfgDbName, '_') !== false
+        ? substr($cfgDbName, (int) strpos($cfgDbName, '_') + 1) : $cfgDbName;
+    $dbUserRaw = strpos($cfgDbUser, '_') !== false
+        ? substr($cfgDbUser, (int) strpos($cfgDbUser, '_') + 1) : $cfgDbUser;
+}
+
+/* وضعیت را همین اول مشخص کن */
+$dbState      = 'unknown';
+$dbStateMsg   = '';
+$dbStateCode  = 0;
+$dbCreated    = false;   // خودمان ساختیمش
+$dbCreateErr  = '';
+
+if ($configExists) {
+    try {
+        Db::conn();
+        $dbState = 'ok';
+    } catch (Throwable $e) {
+        [$dbState, $dbStateCode] = db_state($e);
+        $dbStateMsg = $e->getMessage();
+    }
+}
+
+$doCreateDb = $allowed && isset($_GET['create-db']);
+
+if ($doCreateDb && $dbState === 'missing') {
+    [$ok, $err] = try_create_database((array) Config::get('db', []));
+    if ($ok) {
+        /* اتصال را دوباره امتحان کن تا مطمئن شویم دیتابیس واقعاً هست */
+        try {
+            Db::conn();
+            $dbState   = 'ok';
+            $dbCreated = true;
+        } catch (Throwable $e) {
+            [$dbState, $dbStateCode] = db_state($e);
+            $dbStateMsg  = $e->getMessage();
+            $dbCreateErr = $e->getMessage();
+        }
+    } else {
+        $dbCreateErr = $err;
+    }
+}
+
+/* ------------------------------------------------------------------
    جدا کردن دستورهای SQL
 
    نمی‌شود ساده روی «;» شکست: نقطه‌ویرگول ممکن است داخل رشته یا
@@ -394,17 +532,134 @@ $selfUrl = htmlspecialchars(
 
 <?php elseif (!$doRun): ?>
 
-  <?php if ($dbError !== null): ?>
-    <div class="banner fail">اتصال به دیتابیس برقرار نشد.</div>
+  <?php if ($dbState === 'missing'): ?>
+
+    <?php if ($dbCreated): ?>
+      <div class="banner ok">دیتابیس ساخته شد.</div>
+      <div class="card"><div class="row"><div>
+        <div class="t">دیتابیس «<?= htmlspecialchars($cfgDbName, ENT_QUOTES, 'UTF-8') ?>» با موفقیت ساخته شد</div>
+        <div class="d">
+          حالا جدول‌ها را بسازید. دکمه‌ی سبز «ساخت جدول‌ها» پایین همین صفحه است.
+        </div>
+      </div></div></div>
+    <?php else: ?>
+      <div class="banner warn">دیتابیس «<?= htmlspecialchars($cfgDbName, ENT_QUOTES, 'UTF-8') ?>» هنوز ساخته نشده است.</div>
+
+      <div class="card"><div class="row"><div>
+        <div class="t">خبر خوب: اسم و رمزش درست است</div>
+        <div class="d">
+          به سرور دیتابیس وصل شدیم و فقط گفت که دیتابیسی با این اسم
+          وجود ندارد. یعنی <code>user</code> و <code>pass</code> در
+          <code>api/config.php</code> درست است و فقط خودِ دیتابیس
+          ساخته نشده.
+        </div>
+      </div></div>
+
+      <h2>الف) امتحان کن خودش بسازد</h2>
+      <p class="d">
+        روی بعضی هاست‌ها این کار جواب می‌دهد. یک بار بزنید؛ اگر هاست
+        اجازه نداد، هیچ چیزی خراب نمی‌شود و فقط پیام می‌دهد.
+      </p>
+      <?php if ($dbCreateErr !== ''): ?>
+        <div class="card"><div class="row"><div>
+          <div class="t">هاست اجازه نداد</div>
+          <div class="sqlbox"><?= htmlspecialchars($dbCreateErr, ENT_QUOTES, 'UTF-8') ?></div>
+          <div class="d" style="margin-top:8px">
+            خیلی طبیعی است — روی اکثر هاست‌های اشتراکی، ساختن دیتابیس
+            فقط از داخل cPanel ممکن است. پس بروید سراغ راه «ب» پایین؛
+            سی ثانیه بیشتر وقت نمی‌گیرد.
+          </div>
+        </div></div></div>
+      <?php endif; ?>
+      <p>
+        <a class="btn" href="<?= $selfUrl ?>?key=<?= htmlspecialchars($guardKey, ENT_QUOTES, 'UTF-8') ?>&amp;create-db=1">
+          ساختن خودکار دیتابیس
+        </a>
+      </p>
+
+      <h2>ب) ساختن دستی در cPanel — ۳ کلیک</h2>
+      <div class="card">
+        <div class="row"><div>
+          <div class="t">۱. cPanel ← بخش Databases ← «MySQL Database Wizard»</div>
+          <div class="d">
+            اسم دیتابیس را بنویسید: <code><?= htmlspecialchars($dbNameRaw, ENT_QUOTES, 'UTF-8') ?></code>
+            <br>
+            (cPanel پیشوند حساب شما را خودش اضافه می‌کند. پس فقط بخش
+            بدون پیشوند را بنویسید.)
+          </div>
+        </div></div>
+        <div class="row"><div>
+          <div class="t">۲. همان صفحه: یک کاربر بسازید و رمزش را کپی کنید</div>
+          <div class="d">
+            اسم کاربر و رمزش باید همان چیزی باشد که در
+            <code>api/config.php</code> نوشته‌اید:
+            <br>
+            کاربر: <code><?= htmlspecialchars($dbUserRaw, ENT_QUOTES, 'UTF-8') ?></code>
+            <br>
+            (اگر رمز را یادتان نیست، در همان صفحه دکمه‌ی Change Password هست.)
+          </div>
+        </div></div>
+        <div class="row"><div>
+          <div class="t">۳. تیک «ALL PRIVILEGES» را بزنید ← Next</div>
+          <div class="d">
+            بدون این تیک، سایت به دیتابیس وصل نمی‌شود.
+          </div>
+        </div></div>
+      </div>
+
+      <p class="d">
+        بعد از این سه کلیک، این صفحه را دوباره باز کنید (همین آدرس با کلید).
+        این بار می‌نویسد «اتصال به دیتابیس برقرار است» و دکمه‌ی
+        «ساخت جدول‌ها» ظاهر می‌شود.
+      </p>
+    <?php endif; ?>
+
+  <?php elseif ($dbState === 'badcreds'): ?>
+
+    <div class="banner fail">نام کاربری یا رمز دیتابیس غلط است.</div>
     <div class="card"><div class="row"><div>
-      <div class="t">پیام خطا</div>
-      <div class="sqlbox"><?= htmlspecialchars($dbError, ENT_QUOTES, 'UTF-8') ?></div>
+      <div class="t">پیام سرور</div>
+      <div class="sqlbox"><?= htmlspecialchars($dbStateMsg, ENT_QUOTES, 'UTF-8') ?></div>
       <div class="d" style="margin-top:8px">
-        نام دیتابیس، نام کاربر و رمز را در <code>api/config.php</code> بررسی کنید.
-        در cPanel مطمئن شوید کاربر به دیتابیس وصل شده و
-        <b>ALL PRIVILEGES</b> دارد.
+        یعنی <code>user</code> یا <code>pass</code> در
+        <code>api/config.php</code> با آن چه در cPanel ساخته‌اید
+        یکی نیست.
+        <br><br>
+        <b>رمز را یادتان نیست؟</b> لازم نیست دیتابیس را از نو بسازید:
+        cPanel ← MySQL Databases ← پایین صفحه بخش Current Users ←
+        جلوی همان کاربر «Change Password» ← رمز تازه. بعد فقط همین رمز
+        تازه را در <code>api/config.php</code> بنویسید.
       </div>
     </div></div></div>
+
+  <?php elseif ($dbState === 'nopriv'): ?>
+
+    <div class="banner fail">کاربر به این دیتابیس دسترسی ندارد.</div>
+    <div class="card"><div class="row"><div>
+      <div class="t">پیام سرور</div>
+      <div class="sqlbox"><?= htmlspecialchars($dbStateMsg, ENT_QUOTES, 'UTF-8') ?></div>
+      <div class="d" style="margin-top:8px">
+        کاربر ساخته شده، ولی به این دیتابیس وصل نشده. در cPanel بروید به
+        <b>MySQL Databases</b> ← پایین صفحه بخش «Add User To Database»
+        ← همان کاربر و همان دیتابیس را انتخاب کنید ←
+        <b>ALL PRIVILEGES</b> ← Make Changes.
+      </div>
+    </div></div></div>
+
+  <?php elseif ($dbState === 'down'): ?>
+
+    <div class="banner fail">سرور دیتابیس جواب نداد.</div>
+    <div class="card"><div class="row"><div>
+      <div class="t">پیام سرور</div>
+      <div class="sqlbox"><?= htmlspecialchars($dbStateMsg, ENT_QUOTES, 'UTF-8') ?></div>
+      <div class="d" style="margin-top:8px">
+        معمولاً یعنی مقدار <code>host</code> در <code>api/config.php</code>
+        درست نیست. روی اکثر هاست‌های cPanel باید همان
+        <code>localhost</code> بماند. اگر باز هم نشد، با پشتیبانی هاست
+        تماس بگیرید و بگویید سرور MySQL پاسخ نمی‌دهد.
+      </div>
+    </div></div></div>
+
   <?php else: ?>
     <div class="banner ok">اتصال به دیتابیس برقرار است.</div>
     <div class="card">
@@ -455,8 +710,35 @@ $selfUrl = htmlspecialchars(
   <?php if ($fileError !== null): ?>
     <div class="banner fail"><?= htmlspecialchars($fileError, ENT_QUOTES, 'UTF-8') ?></div>
   <?php elseif ($dbError !== null): ?>
-    <div class="banner fail">اتصال به دیتابیس برقرار نشد.</div>
+    <div class="banner fail">
+      <?php if ($dbState === 'missing'): ?>
+        دیتابیس «<?= htmlspecialchars($cfgDbName, ENT_QUOTES, 'UTF-8') ?>» پیدا نشد.
+      <?php elseif ($dbState === 'badcreds'): ?>
+        نام کاربری یا رمز دیتابیس غلط است.
+      <?php elseif ($dbState === 'nopriv'): ?>
+        کاربر به این دیتابیس دسترسی ندارد.
+      <?php else: ?>
+        اتصال به دیتابیس برقرار نشد.
+      <?php endif; ?>
+    </div>
     <div class="sqlbox"><?= htmlspecialchars($dbError, ENT_QUOTES, 'UTF-8') ?></div>
+    <div class="card" style="margin-top:14px"><div class="row"><div class="d">
+      <?php if ($dbState === 'missing'): ?>
+        اول دیتابیس را بسازید. یک راه سریع: همین آدرس را بدون
+        <code>&amp;run=1</code> باز کنید — در همان صفحه دکمه‌ی
+        «ساختن خودکار دیتابیس» و راهنمای سه‌کلیکی cPanel هست.
+      <?php elseif ($dbState === 'badcreds'): ?>
+        رمز را در cPanel ← MySQL Databases ← Current Users ←
+        Change Password عوض کنید و همان رمز تازه را در
+        <code>api/config.php</code> بنویسید.
+      <?php elseif ($dbState === 'nopriv'): ?>
+        cPanel ← MySQL Databases ← Add User To Database ← همان کاربر
+        و همان دیتابیس ← ALL PRIVILEGES ← Make Changes.
+      <?php else: ?>
+        مقدار <code>host</code> در <code>api/config.php</code> را بررسی
+        کنید (روی اکثر هاست‌ها <code>localhost</code> درست است).
+      <?php endif; ?>
+    </div></div></div>
   <?php else: ?>
 
     <?php if ($failCount === 0): ?>
