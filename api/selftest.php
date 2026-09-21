@@ -230,8 +230,49 @@ if (is_file(__DIR__ . '/config.php')) {
         $ver = Db::val('SELECT VERSION()');
         check('اتصال به دیتابیس', 'ok', 'MySQL/MariaDB ' . $ver);
         $dbOk = true;
+
+        /* ظرفیت سرور دیتابیس — روی هاست اشتراکی، پر بودن اتصال‌ها
+           شایع‌ترین دلیل خطای «ارتباط برقرار نشد» است. */
+        try {
+            $mx = Db::one("SHOW VARIABLES LIKE 'max_connections'");
+            $th = Db::one("SHOW STATUS LIKE 'Threads_connected'");
+            if ($mx && $th) {
+                $max = (int) ($mx['Value'] ?? 0);
+                $cur = (int) ($th['Value'] ?? 0);
+                $pct = $max > 0 ? (int) round($cur * 100 / $max) : 0;
+                check(
+                    'ظرفیت سرور دیتابیس',
+                    $max > 0 && $pct >= 80 ? 'warn' : 'ok',
+                    Jalali::fa((string) $cur) . ' اتصال فعال از ' . Jalali::fa((string) $max)
+                    . ' (' . Jalali::fa((string) $pct) . '٪)'
+                    . ($pct >= 80 ? ' — سرور تقریباً پر است' : '')
+                );
+            }
+        } catch (Throwable $e) {
+            /* بعضی هاست‌ها اجازه‌ی SHOW نمی‌دهند — مهم نیست */
+        }
     } catch (Throwable $e) {
-        check('اتصال به دیتابیس', 'fail', 'برقرار نشد — نام، کاربر یا رمز را بررسی کنید');
+        /* پیام واقعی MySQL را نشان می‌دهیم: این صفحه با کلید باز
+           می‌شود و بدون این پیام، «برقرار نشد» هیچ چیزی یاد نمی‌دهد. */
+        /* چه مقدارهایی واقعاً استفاده شده؟ بدون این‌ها مقایسه با cPanel
+           حدس‌وگمان است. رمز هرگز نمایش داده نمی‌شود. */
+        $used = '';
+        try {
+            $db = Config::get('db');
+            if (is_array($db)) {
+                $used = ' [host: ' . ($db['host'] ?? '?')
+                      . ' · دیتابیس: ' . ($db['name'] ?? '?')
+                      . ' · کاربر: ' . ($db['user'] ?? '?') . ']';
+            }
+        } catch (Throwable $ignore) {
+        }
+
+        check(
+            'اتصال به دیتابیس',
+            'fail',
+            'برقرار نشد — ' . $e->getMessage()
+            . ' ⚠️ ' . Db::diagnoseConnectError($e->getMessage()) . $used
+        );
     }
 }
 

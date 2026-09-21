@@ -795,6 +795,10 @@ $selfUrl = htmlspecialchars(
         <code>localhost</code> بماند. اگر باز هم نشد، با پشتیبانی هاست
         تماس بگیرید و بگویید سرور MySQL پاسخ نمی‌دهد.
       </div>
+      <div class="d" style="margin-top:8px">
+        <strong>تشخیص دقیق‌تر:</strong>
+        <?= htmlspecialchars(Db::diagnoseConnectError($dbStateMsg), ENT_QUOTES, 'UTF-8') ?>
+      </div>
     </div></div></div>
 
   <?php else: ?>
